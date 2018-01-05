@@ -10,9 +10,11 @@ library(GOstats)
 library(org.Sc.sgd.db)
 library(org.Hs.eg.db)
 
+source("complex_networks_functions.R")  # load in the functions required for this work. 
+
 # HINT (High-quality INTeractomes) is a curated compilation of high-quality protein-protein 
 # interactions from 8 interactome resources (BioGRID, MINT, iRefWeb, DIP, IntAct, HPRD, MIPS 
-# and the PDB).
+# and the PDB). Contains 12,429 unique proteins with 59,128 interactions between them. http://hint.yulab.org/
 ppi_hint <- read.csv("c:\\R-files\\proteins\\HINT-2017.csv", header=TRUE,stringsAsFactors = FALSE)
 
 setwd("C:/R-files/complexnetworks")    # point to where my code lives

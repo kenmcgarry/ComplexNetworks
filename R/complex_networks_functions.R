@@ -1,7 +1,12 @@
 # complex_networks_functions.R
 # helper functions and calls in libraries
 # started: 5/1/18
-
+library(sand)
+library(igraph)
+library(GO.db)
+library(GOstats)
+library(org.Sc.sgd.db)
+library(org.Hs.eg.db)
 library(dplyr)
 library(tidyr)
 library(igraph)
@@ -107,9 +112,8 @@ count_interactions <- function(protein_list) {
 }
 
 
-
+# intial code from Kolaczyk and Csardi book, good for intro to GO annoations
 example_from_kolaczyk <- function(){
-  # intial code from Kolaczyk and Csardi book
   oldw <- getOption("warn")
   options(warn = -1)
   set.seed(42)

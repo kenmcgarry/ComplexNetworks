@@ -18,16 +18,13 @@ drug_targets <- load_drugtargets()  # loads in and preprocesses the file.
 
 bar_plot_drugtargets()  # barplot of the types of drug targets
 
+# Covert gene names all to uppercase
+drug_targets$Gene <- toupper(drug_targets$Gene)
+ppi_hint <- mutate_all(ppi_hint, funs(toupper))
 
-
-
-
-
-
-
-
-
-
+# get rid of duplicate A and B columns - NB for some reason duplicated() function cannot find them!!!
+ppi_hint <- ppi_hint %>% 
+    dplyr::filter(Gene_A != Gene_B)
 
 
 

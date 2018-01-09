@@ -27,6 +27,9 @@ firstup <- function(x) {
 }
 
 # Drug targets of the various drugs - usefully contains protein type (e.g. GPCR) as well.
+# from http://drugcentral.org/download
+# DrugCentral is a comprehensive drug information resource for FDA drugs and drugs approved outside USA. The 
+# resources can be searched using: drug, target, disease, pharmacologic action, terms. 
 load_drugtargets <- function(){
   drug_targets <- file.path('C://R-files//disease','drug.target.interaction.tsv.gz') %>% read.delim(na.strings='',header =TRUE,stringsAsFactors = FALSE) 
   names(drug_targets)[names(drug_targets)=="DRUG_NAME"] <- "DrugName"
@@ -40,12 +43,14 @@ load_drugtargets <- function(){
 }
 
 # R provides a tail and head command to view last six and first six elements, so why not the middle six?
-middle <- function(mydata) {
+# optional parameter n will print more or less if present.
+middle <- function(mydata,n){
   len <- nrow(mydata)
   startpoint <- round(len/2)
-  endpoint <- startpoint+5
+  if(missing(n)){
+    n <- 5}
+  endpoint <- startpoint+n
   mydata[startpoint:endpoint,]
-  
 }
 
 # For each protein in the list findout how many publiactions it has been mentioned in
@@ -155,6 +160,25 @@ example_from_kolaczyk <- function(){
   
 }
 
+# Calculate some statistics about the disease gene network
+get_gstatistics <- function(gt) {
+  gstats <- data.frame(
+    modularity=modularity(gt, membership(cluster_walktrap(gt))),
+    avepath=average.path.length(gt),
+    nedges=ecount(gt),
+    nverts=vcount(gt),
+    transit=transitivity(gt),
+    avedegree=mean(degree(gt)),
+    diameter=diameter(gt,weights=NA),
+    connect=is.connected(gt),
+    closeness=closeness(gt),
+    betweenness=betweenness(gt,directed=FALSE),
+    density=graph.density(gt),
+    hubness=hub_score(gt)$vector,
+    authority=authority.score(gt)$vector)
+  #power=bonpow(gt))
+  return(gstats)
+}
 
 
 

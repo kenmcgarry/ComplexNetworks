@@ -1,3 +1,10 @@
+# build a igraph object and get its statistics
+# Do not plot the entire graph as its way too large - plot a small subset only
+ghint <- graph.data.frame(ppi_hint)
+ghint<-as.undirected(ghint); 
+gs<-get_gstatistics(ghint)
+head(gs)
+
 # create network and plot it
 layouts <- grep("^layout_",ls("package:igraph"), value=TRUE)[-1]
 # Remove layouts that do not apply to our graph.

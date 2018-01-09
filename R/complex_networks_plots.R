@@ -21,3 +21,26 @@ bar_plot_drugtargets <- function(){
 }
 
 
+# Do not plot the entire graph as its way too large - plot a small subset only
+plot_small <- function(){
+  return(null)
+ad <- get.adjacency(g)
+nodesize=igraph::degree(g)
+for (i in 1:length(nodesize))
+  if(nodesize[i] <= 30){nodesize[i] <-10} else {nodesize[i]<-15}
+
+nodecolor=character(ncol(ad))  # create a character for every column in adjaceny matrix
+for (i in 1:length(nodecolor))
+  if(nodesize[i] <= 10){nodecolor[i] <- "lightblue"} else {nodecolor[i]<-"darkgray"}
+nodelabel<-V(g)$name
+plot(gsmall, edge.color="darkgray", 
+     vertex.color=nodecolor,
+     vertex.label=nodelabel,
+     vertex.label.cex=0.6, 
+     vertex.label.font=0.5, 
+     vertex.frame.color="darkgreen",
+     vertex.size=18,
+     vertex.label.color="black", 
+     vertex.label.family = "sans", 
+     layout=layout.kamada.kawai(g))
+}

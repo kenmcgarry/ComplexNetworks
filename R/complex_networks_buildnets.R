@@ -5,6 +5,14 @@ ghint<-as.undirected(ghint);
 gs<-get_gstatistics(ghint)
 head(gs)
 
+# link salience - might solve hub idenification problem
+# https://www.nature.com/articles/ncomms1847
+# https://github.com/csgillespie/poweRlaw
+# Calculate power law for our protein networks - any diff between hubs and non-hubs?
+# also graph coreness https://jcasasr.wordpress.com/2015/02/03/plotting-the-coreness-of-a-network-with-r-and-igraph/
+cores = graph.coreness(as.undirected(ghint))
+head(sort(cores, decreasing=TRUE), 3)
+
 # create network and plot it
 layouts <- grep("^layout_",ls("package:igraph"), value=TRUE)[-1]
 # Remove layouts that do not apply to our graph.

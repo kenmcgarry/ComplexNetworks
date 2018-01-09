@@ -18,6 +18,7 @@ library(scales)
 library(grid)
 library(RColorBrewer)
 library(xtable)
+library(poweRlaw)
 
 
 # Makes first letter of string uppercase

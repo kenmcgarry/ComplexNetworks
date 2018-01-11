@@ -205,28 +205,27 @@ corenessLayout <- function(g) {
 find_hubs <- function(gstats){
   genenames <- as.character(rownames(gstats))
   hublist <- cbind(gstats,genenames)
-  
   hublist <- filter(hublist,degree > 10)
   hublist <- data.frame(lapply(hublist, as.character), stringsAsFactors=FALSE)
   
   return(hublist)
 }
 
-# is_hub_target() receives a list of hubs and the drug_target structure to see if
-# that protein is also a target as well.
+# is_hub_target() receives a list of hubs, the drug_target structure and the PPI network to see if
+# these hub proteins are also targets.
 is_hub_target <- function(hlist,dt,ppi_h){
   hub_targ_list <- dt[1,] # instantiate before use
   gnames <- hlist$genenames
   totalgenes <- c(ppi_hint[,1],ppi_hint[,2])
   cat("\nWe have ",length(unique(totalgenes))," unique genes in PPI network")
-  cat("\nWe have ",length(unique(gnames))," unique hub genes in total")
+  cat("\nWe have ",length(unique(gnames))," unique HUB genes in PPI network")
   for (i in 1:length(gnames)){
     gene <- gnames[i] # get hub genes individually and see if they in lists of targets
     glist <- filter(dt, Gene == gene)  # This bit is OK
     if(nrow(glist) > 0){
       hub_targ_list <- rbind(hub_targ_list,glist) }
   }
-  
+  # Line below removes duplicates that appear in two variables
   hub_targ_list <-hub_targ_list[!(duplicated(hub_targ_list[c("DrugName","Gene")]) | duplicated(hub_targ_list[c("DrugName","Gene")], fromLast = TRUE)), ]
   hub_targ_list <- hub_targ_list[-1,]    # 1st entry is rubbish, so remove it
   cat("\nWe have ",length(unique(hub_targ_list$Gene))," unique genes that are hubs AND targets")

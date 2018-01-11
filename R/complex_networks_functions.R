@@ -183,7 +183,6 @@ get_gstatistics <- function(gt) {
 
 # 
 # https://jcasasr.wordpress.com/2015/02/03/plotting-the-coreness-of-a-network-with-r-and-igraph/
-
 corenessLayout <- function(g) {
   coreness <- graph.coreness(g);
   xy <- array(NA, dim=c(length(coreness), 2));
@@ -213,12 +212,14 @@ find_hubs <- function(gstats){
   return(hublist)
 }
 
-# is_hub_target() receives a list of hubs and checks the drug_target structure to see if
+# is_hub_target() receives a list of hubs and the drug_target structure to see if
 # that protein is also a target as well.
-is_hub_target <- function(hlist,dt){
+is_hub_target <- function(hlist,dt,ppi_h){
   hub_targ_list <- dt[1,] # instantiate before use
   gnames <- hlist$genenames
-  cat("\nNumber of genes is ",length(gnames))
+  totalgenes <- c(ppi_hint[,1],ppi_hint[,2])
+  cat("\nWe have ",length(unique(totalgenes))," unique genes in PPI network")
+  cat("\nWe have ",length(unique(gnames))," unique hub genes in total")
   for (i in 1:length(gnames)){
     gene <- gnames[i] # get hub genes individually and see if they in lists of targets
     glist <- filter(dt, Gene == gene)  # This bit is OK
@@ -228,7 +229,10 @@ is_hub_target <- function(hlist,dt){
   
   hub_targ_list <-hub_targ_list[!(duplicated(hub_targ_list[c("DrugName","Gene")]) | duplicated(hub_targ_list[c("DrugName","Gene")], fromLast = TRUE)), ]
   hub_targ_list <- hub_targ_list[-1,]    # 1st entry is rubbish, so remove it
-  cat("\nWe have ",length(unique(shite$Gene))," unique genes that are hubs AND targets")
+  cat("\nWe have ",length(unique(hub_targ_list$Gene))," unique genes that are hubs AND targets")
+  cat("\nWe have ",length(unique(dt$Gene)) - length(unique(hub_targ_list$Gene)),   " unique genes that are targets but NOT hubs")
+  cat("\nWe have ",length(unique(dt$Gene)),   " unique genes that are targets in total")
+  
   return(hub_targ_list)
 }
 

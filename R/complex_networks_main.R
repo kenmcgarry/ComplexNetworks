@@ -7,7 +7,8 @@ memory.limit(2210241024*1024) # use more RAM memory (22 GBs)
 setwd("C:/R-files/complexnetworks")    # point to where my code lives
 source("complex_networks_functions.R")  # load in the functions required for this work. 
 source("complex_networks_plots.R")  # load in the plotting functions used in paper. 
-#load("complexnets-4thJanuary2018.RData") # load in required data - the contents will change regulary
+
+#load("complexnets-11thJanuary2018.RData") # load in required data - the contents will change regulary
 # example_from_kolaczyk()
 
 # HINT (High-quality INTeractomes) is a curated compilation of high-quality protein-protein 
@@ -26,7 +27,7 @@ ppi_hint <- mutate_all(ppi_hint, funs(toupper))
 ppi_hint <- ppi_hint %>% 
     dplyr::filter(Gene_A != Gene_B)
 
-
+source("complex_networks_buildnets.R")  # create a PPI network, detemine hubs and targets
 
 
 

@@ -169,7 +169,7 @@ get_gstatistics <- function(gt) {
     nedges=ecount(gt),
     nverts=vcount(gt),
     transit=transitivity(gt),
-    avedegree=mean(degree(gt)),
+    degree=(degree(gt)),
     diameter=diameter(gt,weights=NA),
     connect=is.connected(gt),
     closeness=closeness(gt),
@@ -181,11 +181,56 @@ get_gstatistics <- function(gt) {
   return(gstats)
 }
 
+# 
+# https://jcasasr.wordpress.com/2015/02/03/plotting-the-coreness-of-a-network-with-r-and-igraph/
+
+corenessLayout <- function(g) {
+  coreness <- graph.coreness(g);
+  xy <- array(NA, dim=c(length(coreness), 2));
+  
+  shells <- sort(unique(coreness));
+  for(shell in shells) {
+    v <- 1 - ((shell-1) / max(shells));
+    nodes_in_shell <- sum(coreness==shell);
+    angles <- seq(0,360,(360/nodes_in_shell));
+    angles <- angles[-length(angles)]; # remove last element
+    xy[coreness==shell, 1] <- sin(angles) * v;
+    xy[coreness==shell, 2] <- cos(angles) * v;
+  }
+  return(xy);
+}
 
 
+# find_hubs() when presented with graph stats object will search for hubs and return list
+# it will also add genenames to hublist.
+find_hubs <- function(gstats){
+  genenames <- as.character(rownames(gstats))
+  hublist <- cbind(gstats,genenames)
+  
+  hublist <- filter(hublist,degree > 10)
+  hublist <- data.frame(lapply(hublist, as.character), stringsAsFactors=FALSE)
+  
+  return(hublist)
+}
 
-
-
+# is_hub_target() receives a list of hubs and checks the drug_target structure to see if
+# that protein is also a target as well.
+is_hub_target <- function(hlist,dt){
+  hub_targ_list <- dt[1,] # instantiate before use
+  gnames <- hlist$genenames
+  cat("\nNumber of genes is ",length(gnames))
+  for (i in 1:length(gnames)){
+    gene <- gnames[i] # get hub genes individually and see if they in lists of targets
+    glist <- filter(dt, Gene == gene)  # This bit is OK
+    if(nrow(glist) > 0){
+      hub_targ_list <- rbind(hub_targ_list,glist) }
+  }
+  
+  hub_targ_list <-hub_targ_list[!(duplicated(hub_targ_list[c("DrugName","Gene")]) | duplicated(hub_targ_list[c("DrugName","Gene")], fromLast = TRUE)), ]
+  hub_targ_list <- hub_targ_list[-1,]    # 1st entry is rubbish, so remove it
+  cat("\nWe have ",length(unique(shite$Gene))," unique genes that are hubs AND targets")
+  return(hub_targ_list)
+}
 
 
 

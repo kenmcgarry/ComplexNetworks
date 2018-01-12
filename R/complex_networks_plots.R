@@ -44,3 +44,7 @@ plot(gsmall, edge.color="darkgray",
      vertex.label.family = "sans", 
      layout=layout.kamada.kawai(g))
 }
+
+
+bar_plot_drugtargets()  # barplot of the protein types of drug targets
+

@@ -8,7 +8,7 @@ head(gs)
 # Need an unlist type function to unravel "GABRA4|GABRB2|GABRD" multiple entries in drug_target
 
 hublist <- find_hubs(gs)
-hubtargetlist <- is_hub_target(hublist,drug_targets,ppi_hint)
+hubtargetlist <- is_hub_target(hublist,drug_targets,ppi)
 
 hlist <- unique(hubtargetlist$Gene)
 

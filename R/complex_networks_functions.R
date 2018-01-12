@@ -209,7 +209,8 @@ corenessLayout <- function(g) {
 
 
 # find_hubs() when presented with graph stats object will search for hubs and return list
-# it will also add genenames to hublist.
+# it will also add genenames to hublist. Need to create igraph object first then run get
+# gs_statistics() to get the required data on "degree2 for each protein.
 find_hubs <- function(gstats){
   genenames <- as.character(rownames(gstats))
   hublist <- cbind(gstats,genenames)
@@ -219,12 +220,12 @@ find_hubs <- function(gstats){
   return(hublist)
 }
 
-# is_hub_target() receives a list of hubs, the drug_target structure and the PPI network to see if
+# is_hub_target() receives a list of hubs, the drug_target data and the PPI network to see if
 # these hub proteins are also targets.
 is_hub_target <- function(hlist,dt,ppi_h){
   hub_targ_list <- dt[1,] # instantiate before use
   gnames <- hlist$genenames
-  totalgenes <- c(ppi_hint[,1],ppi_hint[,2])
+  totalgenes <- c(ppi[,1],ppi[,2])
   cat("\nWe have ",length(unique(totalgenes))," unique genes in PPI network")
   cat("\nWe have ",length(unique(gnames))," unique HUB genes in PPI network")
   for (i in 1:length(gnames)){

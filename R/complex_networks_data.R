@@ -22,13 +22,15 @@ ppi_hint <- ppi_hint %>%
 
 bioplex <- read.csv(file="C://R-files//proteins//BioPlex.csv", header=TRUE, sep=",")
 # Need to combine "drug_targets" ppi with "ppi_hint"
-dt_genes <- unique(drug_targets$Gene)
-ppigenes <- c(ppi_hint[,1],ppi_hint[,2])
-ppigenes <- unique(ppigenes)
+#dt_genes <- unique(drug_targets$Gene)
+#ppigenes <- c(ppi_hint[,1],ppi_hint[,2])
+#ppigenes <- unique(ppigenes)
 
-ppigenes <- c(ppigenes,bioplex[,1],bioplex[,2])
+#ppigenes <- c(ppigenes,bioplex[,1],bioplex[,2])
 
-shite <- ppigenes[ppigenes %in% dt_genes]
+ppi <- rbind(ppi_hint,bioplex) 
+
+#shite <- ppigenes[ppigenes %in% dt_genes]
 
 
 

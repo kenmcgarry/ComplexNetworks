@@ -5,6 +5,7 @@
 
 ######################### PLOT NETWORKS ######################################
 
+plot_power <- function(){
 # produce a power law graph of degree for paper
 m = displ$new(gs$degree)
 ##Estimate the cut-off
@@ -12,7 +13,8 @@ estimate_xmin(m)
 m$setXmin(105); m$setPars(2.644)
 plot(m,xlab="Degree",ylab="CCDF" ,panel.first = grid(lty = 6, col = "cornsilk2"))
 lines(m, col=2)
-abline(h=c(10,20,50), v=c(1,2,5,10,20,50,100,200,500), col="gray", lty=3)
+abline(v=c(1,2,5,10,20,50,100,200,500), col="gray", lty=3)
+}
 
 # link salience - might solve hub idenification problem
 # https://www.nature.com/articles/ncomms1847

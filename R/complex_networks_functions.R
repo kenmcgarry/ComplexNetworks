@@ -214,7 +214,8 @@ corenessLayout <- function(g) {
 find_hubs <- function(gstats){
   genenames <- as.character(rownames(gstats))
   hublist <- cbind(gstats,genenames)
-  hublist <- filter(hublist,degree > 10)
+  cutoff <- quantile(gstats$degree, probs = c(0.70, 0.75, 0.8, 0.85, 0.9, 0.99), na.rm = T) 
+  hublist <- filter(hublist,degree > cutoff[2])
   hublist <- data.frame(lapply(hublist, as.character), stringsAsFactors=FALSE)
   
   return(hublist)
@@ -222,7 +223,7 @@ find_hubs <- function(gstats){
 
 # is_hub_target() receives a list of hubs, the drug_target data and the PPI network to see if
 # these hub proteins are also targets.
-is_hub_target <- function(hlist,dt,ppi_h){
+is_hub_target <- function(hlist,dt,ppi){
   hub_targ_list <- dt[1,] # instantiate before use
   gnames <- hlist$genenames
   totalgenes <- c(ppi[,1],ppi[,2])

@@ -7,9 +7,9 @@
 memory.limit(2210241024*1024) # use more RAM memory (22 GBs)
 setwd("C:/R-files/complexnetworks")    # point to where my code lives
 source("complex_networks_functions.R")  # load in the functions required for this work. 
-source("complex_networks_plots.R")  # load in the plotting functions used in paper. 
 source("complex_networks_data.R")  # load in the ppi data sets, GO, OMIM, drug targets etc.
 source("complex_networks_buildnets.R")  # create a PPI network, detemine hubs and targets
+source("complex_networks_plots.R")  # load in the plotting functions used in paper. 
 
 
 

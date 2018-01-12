@@ -10,7 +10,7 @@ bar_plot_drugtargets <- function(){
   
   tempnames <- sort(table(drug_targets$TargetClass),decreasing = TRUE)
   mp <- barplot(sort(table(drug_targets$TargetClass),decreasing = TRUE),col="blue",space=1,
-                ylab="Number of drug targets (proteins)",ylim=c(0,6000),main="",xlab = "",xaxt = "n")
+                ylab="Number of drug targets (proteins)",ylim=c(0,7000),main="",xlab = "",xaxt = "n")
                 
   mytable <- length(table(drug_targets$TargetClass))
   end_point <- 0.5 + (mytable) + (mytable)-1
@@ -45,6 +45,29 @@ plot(gsmall, edge.color="darkgray",
      layout=layout.kamada.kawai(g))
 }
 
+# produce a power law graph of degree for paper
+plot_power <- function(){
+  m = displ$new(gs$degree)
+  ##Estimate the cut-off
+  estimate_xmin(m)
+  m$setXmin(105); m$setPars(2.644)
+  
+  plot(m,xlab="Degree",ylab="CDF")
+  grid(lty = 6, col = "cornsilk2")
+  xaxp <- par("xaxp")
+  yaxp <- par("yaxp")
+  
+  abline(v=seq(xaxp[1], xaxp[2], (xaxp[2]-xaxp[1])/xaxp[3]), lty=6, col = "cornsilk2")
+  abline(h=seq(yaxp[1], yaxp[2], (yaxp[2]-yaxp[1])/yaxp[3]), lty=6, col = "cornsilk2")
+  
+  lines(m, col=2)
+  abline(h=c(1e-04,1e-03,1e-01,1e-00),v=c(1,2,5,10,20,50,100,200,500), col="gray", lty=3)
+}
+
+
 
 bar_plot_drugtargets()  # barplot of the protein types of drug targets
+plot_power()   # graph of degree power law
+
+
 

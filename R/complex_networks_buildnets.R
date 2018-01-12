@@ -5,12 +5,6 @@ ghint <- as.undirected(ghint);
 gs    <- get_gstatistics(ghint)
 head(gs)
 
-# Need to combine "drug_targets" ppi with "ppi_hint"
-dt_genes <- unique(drug_targets$Gene)
-ppigenes <- c(ppi_hint[,1],ppi_hint[,2])
-ppigenes <- unique(ppigenes)
-shite <- ppigenes[ppigenes %in% dt_genes]
-
 # Need an unlist type function to unravel "GABRA4|GABRB2|GABRD" multiple entries in drug_target
 
 hublist <- find_hubs(gs)
@@ -22,7 +16,7 @@ explore_subgraph <- induced.subgraph(graph=ghint,vids=unlist(neighborhood(graph=
 length(V(explore_subgraph))
 plot(explore_subgraph)
 
-coreness = graph.coreness(as.undirected(explore))
+coreness = graph.coreness(as.undirected(explore_subgraph))
 head(sort(coreness, decreasing=TRUE))
 colbar <- rainbow(max(coreness));
 

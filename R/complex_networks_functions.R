@@ -32,13 +32,21 @@ firstup <- function(x) {
 # DrugCentral is a comprehensive drug information resource for FDA drugs and drugs approved outside USA. The 
 # resources can be searched using: drug, target, disease, pharmacologic action, terms. 
 load_drugtargets <- function(){
-  drug_targets <- file.path('C://R-files//disease','drug.target.interaction.tsv.gz') %>% read.delim(na.strings='',header =TRUE,stringsAsFactors = FALSE) 
+  #drug_targets <- file.path('C://R-files//disease','drug.target.interaction.tsv.gz') %>% read.delim(na.strings='',header =TRUE,stringsAsFactors = FALSE) 
+  drug_targets <- read.csv(file="C://R-files//disease//drug.target.interaction.tsv", header=TRUE, sep="\t",stringsAsFactors = FALSE)
   names(drug_targets)[names(drug_targets)=="DRUG_NAME"] <- "DrugName"
   names(drug_targets)[names(drug_targets)=="TARGET_CLASS"] <- "TargetClass"
   names(drug_targets)[names(drug_targets)=="GENE"] <- "Gene"
   drug_targets <- drug_targets[,c(1,4,6)]  # Keep only need three variables
   drug_targets$DrugName <- firstup(drug_targets$DrugName)   # convert first letter to uppercase to match existing data
   drug_targets <- na.omit(drug_targets)# remove NA's
+  
+  # now unlist special entries, I edited the original file and replaced "|" with "/"
+  drug_targets<-
+  drug_targets %>% 
+    mutate(Gene=strsplit(as.character(Gene), "/")) %>%   # symbols=Gene
+    unnest(Gene)
+  drug_targets$Gene <- toupper(drug_targets$Gene)  # all to uppercase
   
   return(drug_targets)
 }

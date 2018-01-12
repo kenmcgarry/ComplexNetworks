@@ -10,7 +10,7 @@ library(org.Hs.eg.db)
 library(dplyr)
 library(tidyr)
 library(igraph)
-#library(NCBI2R)
+library(NCBI2R)
 library(rentrez)
 library(ggplot2)
 library(biomaRt)
@@ -19,7 +19,10 @@ library(grid)
 library(RColorBrewer)
 library(xtable)
 library(poweRlaw)
-
+library(ontologySimilarity)
+library(ontologyIndex)
+library(infotheo)
+library(clusterProfiler)
 
 # Makes first letter of string uppercase
 firstup <- function(x) {
@@ -86,7 +89,7 @@ count_articles <- function (protein_list){
   return(articles)
 }
 
-# Uses defeunct NCBI apckage, For each protein get the proteins they interact with.
+# Uses defunct NCBI apckage, For each protein get the proteins they interact with.
 get_interactions <- function(protein_list){
   
   for (i in 1:length(protein_list)){
@@ -245,5 +248,19 @@ is_hub_target <- function(hlist,dt,ppi){
   return(hub_targ_list)
 }
 
+
+# KEGG over-representation test
+kegg_analysis <- function(yourgenes){
+  #cat("\nyourgenes are: ",yourgenes)
+  eg = bitr(yourgenes, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db");
+  eg<-eg[,2]
+  kk <- enrichKEGG(gene= eg, organism= 'hsa', pvalueCutoff = 0.05)
+  
+  return(kk)
+}
+
+isolates <- function(g){
+  return(which(degree(g)==0)-1)
+   }
 
 

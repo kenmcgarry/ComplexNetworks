@@ -8,6 +8,7 @@
 ppi_hint <- read.csv("c:\\R-files\\proteins\\HINT-2017.csv", header=TRUE,stringsAsFactors = FALSE)
 
 drug_targets <- load_drugtargets()  # loads in and preprocesses the drug.targets file.
+drug_targets <- drug_targets[!(duplicated(drug_targets[c("DrugName","Gene")]) | duplicated(drug_targets[c("DrugName","Gene")], fromLast = TRUE)), ]
 
 
 # Covert gene names all to uppercase

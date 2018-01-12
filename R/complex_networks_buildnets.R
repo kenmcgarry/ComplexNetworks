@@ -2,7 +2,7 @@
 # Do not plot the entire graph as its way too large - plot a small subset only
 gppi <- graph.data.frame(ppi)
 gppi <- as.undirected(gppi); 
-gppi <- simplify(gppi)
+gppi <- igraph::simplify(gppi)
 gs    <- get_gstatistics(gppi)
 head(gs)
 
@@ -25,5 +25,21 @@ colbar <- rainbow(max(coreness))
 # create layout
 ll <- corenessLayout(explore_subgraph)
 plot(explore_subgraph, layout=ll, vertex.size=15, vertex.color=colbar[coreness], vertex.frame.color=colbar[coreness], main='Coreness')
+
+# create drug to target network
+dtn <- drug_targets[,c(1,3)]
+dtn <- graph.data.frame(dtn)
+dtn <- as.undirected(dtn); 
+dtn <- igraph::simplify(dtn)
+dts <- get_gstatistics(dtn)
+
+dtn <- delete.vertices(dtn, V(dtn)[degree(dtn) < 10])
+isol <- isolates(dtn)
+dtn <- delete_vertices(dtn,(isol))
+
+
+
+
+
 
 

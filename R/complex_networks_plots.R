@@ -71,11 +71,16 @@ plot_power <- function(){
   estimate_xmin(m)
   m$setXmin(105); m$setPars(2.644)
   
-  temp <- plot(m,xlab="Degree",ylab="CDF")
+  temp <- plot(m,xlab="Degree",ylab="CDF",plot=FALSE) # only use this to grab coordinates for ggplot2
   
   ggplot(data=temp,aes(x=x,y=y))+
     geom_point()+
-    labs(title="",x="Degree distribution",y="CDF")
+    geom_smooth(se = FALSE, method = "gam", formula = y ~ s(log(x)))+
+    labs(title="",x="Degree distribution",y="CDF")+
+    theme(axis.text.x=element_text(face="bold",angle=0,hjust=1,size=12)) +
+    theme(axis.text.y=element_text(face="bold",angle=0,hjust=1,size=12)) +
+    theme(axis.title.y = element_text(color="black", size=14, face="bold"))+
+    theme(axis.title.x = element_text(color="black", size=14, face="bold"))
   
 }
 

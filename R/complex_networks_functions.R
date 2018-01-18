@@ -23,6 +23,7 @@ library(ontologySimilarity)
 library(ontologyIndex)
 library(infotheo)
 library(clusterProfiler)
+library(linkcomm)
 
 # Makes first letter of string uppercase
 firstup <- function(x) {
@@ -50,6 +51,11 @@ load_drugtargets <- function(){
     mutate(Gene=strsplit(as.character(Gene), "/")) %>%   # symbols=Gene
     unnest(Gene)
   drug_targets$Gene <- toupper(drug_targets$Gene)  # all to uppercase
+  
+  # shorten some names, for ease printing etc
+  drug_targets$TargetClass <- gsub('Nuclear hormone receptor', 'Nuc receptor', drug_targets$TargetClass)
+  drug_targets$TargetClass <- gsub('Transcription factor', 'Transcription', drug_targets$TargetClass)
+  drug_targets$TargetClass <- gsub('Membrane receptor', 'Membrane', drug_targets$TargetClass)
   
   return(drug_targets)
 }
@@ -259,8 +265,14 @@ kegg_analysis <- function(yourgenes){
   return(kk)
 }
 
-isolates <- function(g){
-  return(which(degree(g)==0)-1)
-   }
+
+delete_isolates <- function(gt) {
+  isol <- V(gt)[degree(gt)==0]
+  gt <- delete.vertices(gt, isol)
+  return(gt)
+
+}
+
+
 
 

@@ -27,17 +27,28 @@ ll <- corenessLayout(explore_subgraph)
 plot(explore_subgraph, layout=ll, vertex.size=15, vertex.color=colbar[coreness], vertex.frame.color=colbar[coreness], main='Coreness')
 
 # create drug to target network
-dtn <- drug_targets[,c(1,3)]
+dtn <- drug_targets[,c(1,3)]  # use only drugs and proteins
 dtn <- graph.data.frame(dtn)
 dtn <- as.undirected(dtn); 
-dtn <- igraph::simplify(dtn)
+dtn <- igraph::simplify(dtn)  # remove duplicates and self-loops
+
+dtn <- delete.vertices(dtn, V(dtn)[degree(dtn) < 11])
+dtn <- delete_isolates(dtn)
 dts <- get_gstatistics(dtn)
+layout <- layout_nicely(dtn)
 
-dtn <- delete.vertices(dtn, V(dtn)[degree(dtn) < 10])
-isol <- isolates(dtn)
-dtn <- delete_vertices(dtn,(isol))
+#V(dtn)[V(graph)$type == 1]$shape <- "square"
+#V(dtn)[V(graph)$type == 0]$shape <- "circle"
 
+#plot.igraph(dtn,layout=layout.fruchterman.reingold)
+wc <- cluster_fast_greedy(dtn)#cluster_louvain(dtn)
+modularity(wc)
+mods <- membership(wc)
+#plot(wc, dtn)
 
+# Use linkcomm to obtain useful communities
+dtn <- drug_targets[,c(1,3)]
+com1 <- getLinkCommunities(dtn, hcmethod = "single")
 
 
 

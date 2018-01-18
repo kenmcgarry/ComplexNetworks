@@ -1,8 +1,8 @@
 The following files:
 
-`complex_networks_main.R` is the starting point. It loads in R libraries and calls in the other R files, loading in functions and data files.
+`complex_networks_main.R` is the starting point, it calls in the other R files, loading in functions and data files.
 
-`complex_networks_functions.R` contains the workhorse functions.
+`complex_networks_functions.R` contains the workhorse functions and loads in R libraries.
 
 `complex_networks_plots.R` produces plots that appear in the paper.
 

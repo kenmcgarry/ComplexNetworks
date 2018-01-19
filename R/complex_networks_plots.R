@@ -4,13 +4,13 @@
 # ggplot2 vewrsion of barplot - prettier?
 bar_plot_gg2 <- function(dt,br,mycolor){
   tempnames <- sort(table(dt$TargetClass),decreasing = TRUE)
-  Frequency <- as.vector(tempnames)
+  Frequency <- as.vector(tempnames)  # counts for each protein type
   pnames <- names(tempnames)
   df <- data.frame(Frequency,pnames)
   df$Frequency <- as.numeric(df$Frequency)
 
-  if(br==1){mybreaks = c(0,500,1000,1500,2000,2500,3000,3500,4000)}
-  if(br==2){mybreaks = c(0,200,400,600,800,950)}
+  if(br==1){mybreaks = c(0,500,1000,1500,2000,2500,3000,3500,4000);limits<-max(mybreaks)}
+  if(br==2){mybreaks = c(0,200,400,600,800,1000);limits<-max(mybreaks)}
   
   ggplot(df, aes(x = pnames,y=(Frequency))) + scale_x_discrete(limits = pnames) + 
     geom_bar(stat="identity",fill=mycolor)+
@@ -18,7 +18,7 @@ bar_plot_gg2 <- function(dt,br,mycolor){
     theme(axis.text.y=element_text(face="bold",angle=0,hjust=1,size=12)) +
     ylab("Frequency count of proteins") + 
     xlab("")+
-    scale_y_continuous(expand = c(0,0),breaks = mybreaks)+
+    scale_y_continuous(expand = c(0,0),breaks = mybreaks,limits = c(0,limits)) +
     theme(axis.title.y = element_text(color="black", size=14, face="bold"))
 }
 

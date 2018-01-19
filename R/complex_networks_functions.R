@@ -278,7 +278,7 @@ delete_isolates <- function(gt) {
 annotate_proteins <- function(drugtargets){
   # create drug to target network
   
-  # Remove small quantity proteins
+  # Remove small quantity proteins; Adhesion; Nucler Other; Antibody; CD Molecules; Ribosomal; Cytokine; Surface Antigen; Membrane other
   drugtargets <-  # Only keep protein target types with at least 50 occurences
       drugtargets %>%
       add_count(TargetClass,sort=TRUE) %>%
@@ -294,8 +294,7 @@ annotate_proteins <- function(drugtargets){
   dtn <- delete_isolates(dtn)
   dts <- get_gstatistics(dtn)
   
-  # assign protein types apart from: 
-  # Adhesion; Nucler Other; Antibody; CD Molecules; Ribosomal; Cytokine; Surface Antigen; Membrane other
+  # assign protein types: 
   V(dtn)$GPCR <- 1
   V(target_ppi)$Kinase <- 1
   V(target_ppi)$Enzyme <- 1

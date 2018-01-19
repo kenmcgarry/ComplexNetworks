@@ -1,6 +1,7 @@
 # complex_networks_main.R
 # to be submitted to: Journal of Computers in Biology and Medicine 
-# purpose: complex network theory reveals the modular structure of diseases and their inter-relationships
+# purpose: are hub proteins predisposed to be potential candidates as drug targets for  
+# therapeutic interventions?
 # commenced 4/1/18
 
 #load("complexnets-12thJanuary2018.RData") # load in required data - the contents will change regulary
@@ -12,6 +13,10 @@ source("complex_networks_buildnets.R")  # create a PPI network, detemine hubs an
 source("complex_networks_plots.R")  # load in the plotting functions used in paper. 
 
 
+# some plots for paper
+bar_plot_gg2(drug_targets,1)  # plot all target proteins
+bar_plot_gg2(hubtargetlist,2)  # plot targets that are also hubs 
+plot_power()   # graph of degree power law
 
 
 

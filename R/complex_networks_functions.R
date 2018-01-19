@@ -219,7 +219,7 @@ corenessLayout <- function(g) {
 
 # find_hubs() when presented with graph stats object will search for hubs and return list
 # it will also add genenames to hublist. Need to create igraph object first then run get
-# gs_statistics() to get the required data on "degree2 for each protein.
+# gs_statistics() to get the required data on "degree" for each protein.
 find_hubs <- function(gstats){
   genenames <- as.character(rownames(gstats))
   hublist <- cbind(gstats,genenames)
@@ -274,5 +274,42 @@ delete_isolates <- function(gt) {
 }
 
 
+# Add the protein type to the ppi network of target proteins
+annotate_proteins <- function(drugtargets){
+  # create drug to target network
+  
+  # Remove small quantity proteins
+  drugtargets <-  # Only keep protein target types with at least 50 occurences
+      drugtargets %>%
+      add_count(TargetClass,sort=TRUE) %>%
+      filter(n > 50)
+  
+  dtn <- drugtargets[,c(1,3)]  # use only drugs and proteins
+  dtn[] <- lapply(dtn, as.character) # convert from factors to strings
+  dtn <- graph.data.frame(dtn)
+  dtn <- as.undirected(dtn); 
+  dtn <- igraph::simplify(dtn)  # remove duplicates and self-loops
+  
+  dtn <- delete.vertices(dtn, V(dtn)[degree(dtn) < 5])
+  dtn <- delete_isolates(dtn)
+  dts <- get_gstatistics(dtn)
+  
+  # assign protein types apart from: 
+  # Adhesion; Nucler Other; Antibody; CD Molecules; Ribosomal; Cytokine; Surface Antigen; Membrane other
+  V(dtn)$GPCR <- 1
+  V(target_ppi)$Kinase <- 1
+  V(target_ppi)$Enzyme <- 1
+  V(target_ppi)$IonChannel <- 1
+  V(target_ppi)$Transporter <- 1
+  V(target_ppi)$Membrane <- 1
+  V(target_ppi)$Structural <- 1
+  V(target_ppi)$NucRecept <- 1
+  V(target_ppi)$Transcription <- 1
+  V(target_ppi)$Secreted <- 1
+  V(target_ppi)$Cytosolic <- 1
+  V(target_ppi)$Unclassified <- 1
+  
+  return(anno_target)
+}
 
 

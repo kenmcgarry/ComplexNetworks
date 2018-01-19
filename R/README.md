@@ -9,3 +9,5 @@ The following files:
 `complex_networks_data.R` reads the HINT data and target data in. Proprocess data and removes duplicate entries.
 
 `complex_networks_buildnets.R` creates the igraph network structures and conducts statistical analysis on them. Looks for hub proteins and those proteins that are hubs AND targets.
+
+`complex_networks_misc.R` contains unassigned functions and snippets of code that will be placed in 'complex_networks_functions.R` when fully debugged and working. 

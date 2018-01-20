@@ -48,22 +48,52 @@ plot(gsmall, edge.color="darkgray",
 }
 
 # produce a power law graph of degree for paper
-plot_power <- function(){
+plot_power <- function(gs){
   m = displ$new(gs$degree)
   ##Estimate the cut-off
   estimate_xmin(m)
   m$setXmin(105); m$setPars(2.644)
   
-  temp <- plot(m,xlab="Degree",ylab="CDF") # only use this to grab coordinates for ggplot2
+  temp <- plot(m,xlab="Degree",ylab="Percentiles") # only use this to grab coordinates for ggplot2
   
-  ggplot(data=temp,aes(x=x,y=y))+
+  ggplot(data=temp,aes(x=x,y=y*100))+
     geom_point()+
     geom_smooth(se = FALSE, method = "gam", formula = y ~ s(log(x)))+
-    labs(title="",x="Degree distribution",y="CDF")+
+    labs(title="",x="Degree distribution",y="Percentiles")+
     theme(axis.text.x=element_text(face="bold",angle=0,hjust=1,size=12)) +
     theme(axis.text.y=element_text(face="bold",angle=0,hjust=1,size=12)) +
     theme(axis.title.y = element_text(color="black", size=14, face="bold"))+
-    theme(axis.title.x = element_text(color="black", size=14, face="bold"))
+    theme(axis.title.x = element_text(color="black", size=14, face="bold"))+
+    geom_vline(xintercept = 5, linetype="dashed", color = "red", size=1)
   
+  cat("\nPercentiles",quantile(gs$degree, c(.70, .80, .90)) )
+
 }
+
+G.degrees <- degree(gppi)
+G.degree.histogram <- as.data.frame(table(G.degrees))
+G.degree.histogram[,1] <- as.numeric(G.degree.histogram[,1])
+d=data.frame(lt=c("blank", "solid", "dashed", "dotted", "dotdash", "longdash", "twodash", "1F", "F1", "4C88C488", "12345678"))
+
+
+ggplot(G.degree.histogram, aes(x = G.degrees, y = Freq)) +
+  geom_point(alpha = 0.5, color = "blue",size = 3)+
+  #labs(title="",x="Degree distribution",y="Percentiles")+
+  theme(axis.text.x=element_text(face="bold",angle=0,hjust=1,size=12)) +
+  theme(axis.text.y=element_text(face="bold",angle=0,hjust=1,size=12)) +
+  theme(axis.title.y = element_text(color="black", size=14, face="bold"))+
+  theme(axis.title.x = element_text(color="black", size=14, face="bold"))+
+  
+  scale_x_continuous("Degree",expand = c(0,0),
+                     breaks = c(1, 3, 10, 30, 100, 200, 500),
+                     trans = "log10") +
+  scale_y_continuous("Frequency",expand=c(0,0),
+                     breaks = c(1, 3, 10, 30, 100, 300, 1000, 2000),
+                     trans = "log10") +
+  ggtitle("Degree Distribution (log-log)") +
+  geom_segment(aes(x = 1, y = 300, xend = 15, yend = 300),color="red",linetype="dashed",size=1)  + # Horiz
+  geom_segment(aes(x = 15, y = 1, xend = 15, yend = 300),color="red",linetype="dashed",size=1)    # Vert
+ 
+  cat("\nPercentiles",quantile(gs$degree, c(.60, 0.7, 0.75,.80, .85, .90)) )
+
 

@@ -16,7 +16,7 @@ source("complex_networks_plots.R")  # load in the plotting functions used in pap
 # some plots for paper
 bar_plot_gg2(drug_targets,1,"red")  # plot all target proteins
 bar_plot_gg2(hubtargetlist,2,"blue")  # plot targets that are also hubs 
-plot_power()   # graph of degree power law
+plot_power2(gppi)   # graph of degree power law
 
 
 

@@ -70,12 +70,13 @@ plot_power <- function(gs){
 
 }
 
+
+# ggplot2 version of power law plot
+plot_power2 <- function(gppi){
+  
 G.degrees <- degree(gppi)
 G.degree.histogram <- as.data.frame(table(G.degrees))
 G.degree.histogram[,1] <- as.numeric(G.degree.histogram[,1])
-d=data.frame(lt=c("blank", "solid", "dashed", "dotted", "dotdash", "longdash", "twodash", "1F", "F1", "4C88C488", "12345678"))
-
-
 ggplot(G.degree.histogram, aes(x = G.degrees, y = Freq)) +
   geom_point(alpha = 0.5, color = "blue",size = 3)+
   #labs(title="",x="Degree distribution",y="Percentiles")+
@@ -93,7 +94,7 @@ ggplot(G.degree.histogram, aes(x = G.degrees, y = Freq)) +
   ggtitle("Degree Distribution (log-log)") +
   geom_segment(aes(x = 1, y = 300, xend = 15, yend = 300),color="red",linetype="dashed",size=1)  + # Horiz
   geom_segment(aes(x = 15, y = 1, xend = 15, yend = 300),color="red",linetype="dashed",size=1)    # Vert
- 
-  cat("\nPercentiles",quantile(gs$degree, c(.60, 0.7, 0.75,.80, .85, .90)) )
+}
+
 
 

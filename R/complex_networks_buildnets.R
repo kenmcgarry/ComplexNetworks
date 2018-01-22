@@ -36,6 +36,37 @@ dtn <- delete_isolates(dtn)
 dts <- get_gstatistics(dtn)
 layout <- layout_nicely(dtn)
 
+# Start building kernal predictors
+library(kernlab)
+
+clu <- clusters(dtn)
+dtn.gc <- induced.subgraph(dtn,clu$membership == which.max(clu$csize))
+L <- as.matrix(graph.laplacian(dtn.gc))
+egl <- eigen(L) 
+nv <- vcount(dtn.gc)
+
+# create and plot the three eigenvectors for the 1st, 2nd and 3rd largest weights
+for (j in 1:3){
+  evals <- egl$values[1:(nv-j)]
+  fevals <- c((evals)^(-j),0)
+  #plot(fevals, col="magenta",xlim=c(1,nv),xlab=c("Index i"),ylab=expression(f(gamma[i])))
+  evec <- egl$vectors[, (nv-j)]
+  vcolors <- character(nv)
+  vcolors[evec >= 0] <- "red"
+  vcolors[evec <  0] <- "blue"
+  vsize <- 15 * sqrt(abs(evec))
+  l <- layout.fruchterman.reingold(dtn.gc)
+  plot(dtn.gc,layout=l,vertex.color=vcolors,vertex.size=vsize,vertex.label=NA)
+}
+
+# set j<-1 and rebuild data, else kernal operions wont work.
+j<-1;evals <- egl$values[1:(nv-j)];fevals <- c((evals)^(-j),0);evec <- egl$vectors[, (nv-j)]
+Kernal1 <- egl$vectors %*% diag(fevals) %*% t(egl$vectors)
+Kernal1 <- as.kernelMatrix(Kernal1)
+
+
+
+
 #V(dtn)[V(graph)$type == 1]$shape <- "square"
 #V(dtn)[V(graph)$type == 0]$shape <- "circle"
 #plot.igraph(dtn,layout=layout.fruchterman.reingold)
@@ -53,10 +84,10 @@ layout <- layout_nicely(dtn)
 
 
 # preprocess dtn for OCG
-dtn$DrugName <- substr(dtn$DrugName, 0, 20)
-dtn$Gene <- substr(dtn$Gene, 0, 20)
-dtn <- data.frame(lapply(dtn, function(x) {gsub(" ", "_", x)}))
+#dtn$DrugName <- substr(dtn$DrugName, 0, 20)
+#dtn$Gene <- substr(dtn$Gene, 0, 20)
+#dtn <- data.frame(lapply(dtn, function(x) {gsub(" ", "_", x)}))
 #oc <- getOCG.clusters(dtn)  # takes many minutes to calculate so comment out
-plot(oc, type = "graph", shownodesin = 7, scale.vertices = 0.1)
+#plot(oc, type = "graph", shownodesin = 7, scale.vertices = 0.1)
 
 

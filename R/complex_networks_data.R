@@ -11,7 +11,7 @@ drug_targets <- load_drugtargets()  # loads in and preprocesses the drug.targets
 drug_targets <- drug_targets[!(duplicated(drug_targets[c("DrugName","Gene")]) | duplicated(drug_targets[c("DrugName","Gene")], fromLast = TRUE)), ]
 
 
-# Covert gene names all to uppercase
+# Convert gene names all to uppercase
 ppi_hint <- mutate_all(ppi_hint, funs(toupper))
 
 # get rid of duplicate A and B columns - NB for some reason duplicated() function cannot find them!!!

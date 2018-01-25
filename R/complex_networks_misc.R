@@ -29,7 +29,7 @@ ppi_net <- set_vertex_attr(ppi_net,"target",joint_ppi,1) # Now assign "1" if pro
 
 #digenes <- file.path('C://R-files//proteins', 'all_gene_disease_associations.tsv.gz') %>% read.delim(na.strings='')
 
-# read in protein classification based on pharos protein families
+# read in protein classification based on pharos database - it has the protein families
 protein_class <- read.csv("c:\\R-files\\proteins\\pharos_v4.6.2.csv", header=TRUE,stringsAsFactors = FALSE,na.strings=c("", "NA"))
 protein_class <- protein_class[,c(3,8)]
 names(protein_class)[names(protein_class)=="DTO.Family"] <- "TargetClass"

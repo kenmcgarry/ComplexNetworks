@@ -1,5 +1,5 @@
 # complex_networks_functions.R
-# helper functions and calls in libraries
+# helper functions and calls in the libraries
 # started: 5/1/18
 library(sand)
 library(igraph)
@@ -156,7 +156,7 @@ example_from_kolaczyk <- function(){
   nn.ave <- sapply(V(ppi.CC.gc), function(x) mean(V(ppi.CC.gc)[nei(x)]$ICSC))
   
   par(mfrow=c(2,1))
-  hist(nn.ave[V(ppi.CC.gc)$ICSC ==1], col="yellow", ylim=c(0,30),xlab="Proportion neighbours w/ ICSC",
+  hist(nn.ave[V(ppi.CC.gc)$ICSC ==1], col="yellow", ylim=c(0,30),xlab="Proportion neighbours with ICSC",
        main="Egos w/ ICSC")
   hist(nn.ave[V(ppi.CC.gc)$ICSC ==0], col="lightblue", ylim=c(0,30),xlab="Proportion neighbours without ICSC",
        main="Egos w/out ICSC")
@@ -173,7 +173,6 @@ example_from_kolaczyk <- function(){
   candidates <- intersect(icst.ida, V(ppi.CC.gc)$name)
   new.icsc <- setdiff(candidates, orig.icsc)
   new.icsc
-  
   options(warn = oldw)
   
 }
@@ -223,7 +222,7 @@ corenessLayout <- function(g) {
 find_hubs <- function(gstats){
   genenames <- as.character(rownames(gstats))
   hublist <- cbind(gstats,genenames)
-  cutoff <- quantile(gstats$degree, probs = c(0.70, 0.75, 0.8, 0.85, 0.9, 0.99), na.rm = T) 
+  cutoff <- quantile(gstats$degree, probs = c(0.70, 0.75, 0.8, 0.85, 0.9, 0.99), na.rm = TRUE) 
   hublist <- filter(hublist,degree > cutoff[2])
   hublist <- data.frame(lapply(hublist, as.character), stringsAsFactors=FALSE)
   

@@ -20,5 +20,3 @@ plot_power2(gppi)   # graph of degree power law
 
 
 
-
-

@@ -2,19 +2,30 @@
 # part completed functions and code that has yet to be assigned.
 # Not called up as yet, as will cause errors.
 
+# unsure protein targets are part of the giant connected ppi network
+# assign 1=target; 0=non-target to each protein
+
+un_targets <- (unique(drug_targets$Gene))        # 1,860 unique protein targets
+length(un_targets)
+un_ppi <- (unique(c(ppi$Gene_A,ppi$Gene_B)))      # 15,792 unique general proteins in ppi
+length(un_ppi)
+
+joint_ppi <- un_targets[un_targets %in% un_ppi]  # 1,293 targets are part of giant connected network (we lose 567 targets!)
+not_ppi <- un_targets[!un_targets %in% un_ppi]  # here are the 567 targets)
+
+# dataframe containing targets and non-target proteins. Annotate with:
+# 1. target; 2. hub; 
+# create ppi network and annotate with target or not target
+ppi_net <- graph.data.frame(ppi)
+ppi_net <- as.undirected(ppi_net); 
+ppi_net <- igraph::simplify(ppi_net)  # remove duplicates and self-loops
+#ppi_net <- delete.vertices(ppi_net, V(ppi_net)[degree(ppi_net) < 11])   # probably wrong thing to do!
+ppi_net <- delete_isolates(ppi_net)
+
+#nlen <- nrow(ppi)
+#anno_ppi <- ppi
 
 ######################### PLOT NETWORKS ######################################
-
-plot_power <- function(){
-# produce a power law graph of degree for paper
-m = displ$new(gs$degree)
-##Estimate the cut-off
-estimate_xmin(m)
-m$setXmin(105); m$setPars(2.644)
-plot(m,xlab="Degree",ylab="CCDF" ,panel.first = grid(lty = 6, col = "cornsilk2"))
-lines(m, col=2)
-abline(v=c(1,2,5,10,20,50,100,200,500), col="gray", lty=3)
-}
 
 # link salience - might solve hub idenification problem
 # https://www.nature.com/articles/ncomms1847

@@ -7,7 +7,6 @@ gs   <- get_gstatistics(gppi)
 head(gs)
 
 # Need an unlist type function to unravel "GABRA4|GABRB2|GABRD" multiple entries in drug_target
-
 hublist <- find_hubs(gs)
 hubtargetlist <- is_hub_target(hublist,drug_targets,ppi)
 hlist <- unique(hubtargetlist$Gene)
@@ -54,7 +53,7 @@ for (j in 1:3){
   vcolors <- character(nv)
   vcolors[evec >= 0] <- "red"
   vcolors[evec <  0] <- "blue"
-  vsize <- 15 * sqrt(abs(evec))
+  vsize <- 30 * sqrt(abs(evec))
   l <- layout.fruchterman.reingold(dtn.gc)
   plot(dtn.gc,layout=l,vertex.color=vcolors,vertex.size=vsize,vertex.label=NA)
 }
@@ -74,20 +73,5 @@ Kernal1 <- as.kernelMatrix(Kernal1)
 #modularity(wc)
 #mods <- membership(wc)
 #plot(wc, dtn)
-
-# Use linkcomm to obtain useful communities
-#dtn <- drug_targets[,c(1,3)]
-#com1 <- getLinkCommunities(dtn, hcmethod = "single",plot = FALSE)
-#mods <- getCommunityConnectedness(com1, conn = "modularity")
-#plot(com1, type = "commsumm", summary = "modularity")
-#plot(com1, type = "dend")
-
-
-# preprocess dtn for OCG
-#dtn$DrugName <- substr(dtn$DrugName, 0, 20)
-#dtn$Gene <- substr(dtn$Gene, 0, 20)
-#dtn <- data.frame(lapply(dtn, function(x) {gsub(" ", "_", x)}))
-#oc <- getOCG.clusters(dtn)  # takes many minutes to calculate so comment out
-#plot(oc, type = "graph", shownodesin = 7, scale.vertices = 0.1)
 
 

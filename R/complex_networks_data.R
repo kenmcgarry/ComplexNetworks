@@ -22,7 +22,6 @@ ppi_hint <- ppi_hint %>%
 # http://bioplex.hms.harvard.edu/
 
 bioplex <- read.csv(file="C://R-files//proteins//BioPlex.csv", header=TRUE, sep=",")
-
 ppi <- rbind(ppi_hint,bioplex) 
 
 ppi <- ppi %>% 

@@ -15,18 +15,31 @@ not_ppi <- un_targets[!un_targets %in% un_ppi]  # here are the 567 targets)
 
 # dataframe containing targets and non-target proteins. Annotate with:
 # 1. target; 2. hub; 
-# create ppi network and annotate with target or not target
+# create ppi network (igraph object) and annotate with target or not target
 ppi_net <- graph.data.frame(ppi)
 ppi_net <- as.undirected(ppi_net); 
 ppi_net <- igraph::simplify(ppi_net)  # remove duplicates and self-loops
-#ppi_net <- delete.vertices(ppi_net, V(ppi_net)[degree(ppi_net) < 11])   # probably wrong thing to do!
 ppi_net <- delete_isolates(ppi_net)
 
-#nlen <- nrow(ppi)
-#anno_ppi <- ppi
+V(ppi_net)[1:vcount(ppi_net)]$target <- 0   # Intialise all to zeros
+V(ppi_net)[1:vcount(ppi_net)]$hub <- 0   # Intialise all to zeros
+V(ppi_net)[1:vcount(ppi_net)]$type <- "unknown"   # Intialise protein "type" to unknown
 
+ppi_net <- set_vertex_attr(ppi_net,"target",joint_ppi,1) # Now assign "1" if protein is a target
+
+#digenes <- file.path('C://R-files//proteins', 'all_gene_disease_associations.tsv.gz') %>% read.delim(na.strings='')
+
+# read in protein classification based on pharos protein families
+protein_class <- read.csv("c:\\R-files\\proteins\\pharos_v4.6.2.csv", header=TRUE,stringsAsFactors = FALSE,na.strings=c("", "NA"))
+protein_class <- protein_class[,c(3,8)]
+names(protein_class)[names(protein_class)=="DTO.Family"] <- "TargetClass"
+names(protein_class)[names(protein_class)=="HGNC.Sym"] <- "Gene"
+protein_class <- protein_class[!(duplicated(protein_class[c("TargetClass","Gene")]) | duplicated(protein_class[c("TargetClass","Gene")], fromLast = TRUE)), ]
+protein_class <- na.omit(protein_class)
+
+
+#ppi_net <- delete.vertices(ppi_net, V(ppi_net)[degree(ppi_net) < 11])   # probably wrong thing to do!
 ######################### PLOT NETWORKS ######################################
-
 # link salience - might solve hub idenification problem
 # https://www.nature.com/articles/ncomms1847
 # https://github.com/csgillespie/poweRlaw

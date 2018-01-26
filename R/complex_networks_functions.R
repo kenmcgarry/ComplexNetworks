@@ -194,12 +194,14 @@ get_gstatistics <- function(gt) {
     closeness=estimate_closeness(gt,mode="all",cutoff=3),
     degree=(degree(gt)),
     betweenness=estimate_betweenness(gt,directed=FALSE,cutoff=3),
-    density=graph.density(gt),
     hubness=hub_score(gt)$vector,
+    central=vector(mode="integer", length=net$nverts),
     comm=vector(mode="integer", length=net$nverts))
     
   tmp <- cluster_walktrap(gt)
   nodes$comm <- as.vector(membership(tmp))
+  alpha <- alpha_centrality(ppi_net,alpha=0.1)  
+  nodes$central <- as.vector(alpha)
     
   cat("\nOverall network statistics:")
   cat("\n   Modularity ",net$modu)

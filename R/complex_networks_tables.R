@@ -7,7 +7,7 @@ display_netstats(gs$net)
 
 
 print(xtable(head(gs$nodes[order(gs$nodes$betweenness,decreasing=TRUE),],15),
-       display=c("s","g","f","f","g","g","f"), math.style.exponents = TRUE,digits=c(0,0,0,2,2,2,1)))
+       display=c("s","g","f","f","g","g","f"), math.style.exponents = TRUE,digits=c(0,0,0,0,2,2,1)))
 
 print(xtable(head(gs$nodes[order(gs$nodes$betweenness,decreasing=FALSE),],15),
              display=c("s","g","f","f","g","g","f"), math.style.exponents = TRUE,digits=c(0,0,0,2,2,2,1)))

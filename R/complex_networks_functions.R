@@ -191,14 +191,16 @@ get_gstatistics <- function(gt) {
     connect=is.connected(gt))
     
   nodes <- data.frame(   
-    closeness=closeness(gt),
+    closeness=estimate_closeness(gt,mode="all",cutoff=3),
     degree=(degree(gt)),
-    betweenness=betweenness(gt,directed=FALSE),
+    betweenness=estimate_betweenness(gt,directed=FALSE,cutoff=3),
     density=graph.density(gt),
     hubness=hub_score(gt)$vector,
-    authority=authority.score(gt)$vector)
-  #power=bonpow(gt))
-  
+    comm=vector(mode="integer", length=net$nverts))
+    
+  tmp <- cluster_walktrap(gt)
+  nodes$comm <- as.vector(membership(tmp))
+    
   cat("\nOverall network statistics:")
   cat("\n   Modularity ",net$modu)
   cat("\n   Average path ",net$avepath)

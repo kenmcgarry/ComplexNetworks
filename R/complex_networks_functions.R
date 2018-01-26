@@ -178,6 +178,7 @@ example_from_kolaczyk <- function(){
 }
 
 # Calculate some statistics about the disease gene network
+# returns a list: net and nodes
 get_gstatistics <- function(gt) {
   
   net <- data.frame( 
@@ -207,9 +208,25 @@ get_gstatistics <- function(gt) {
   cat("\n   Diameter ",net$diam)
   cat("\n   Is connected? ",net$connect)
   
-  gstats <- list(net, nodes)
+  gstats = list(net=net, nodes=nodes)
   return(gstats)
 }
+
+
+# Print out basic network statistics, function is passed the previously calculated info from get_gstatistics().
+# prior to use: gs <- get_gstatistics(ppinetwork)
+# usage:  display_netstats(gs$net)
+display_netstats <- function(net){
+  cat("\nOverall network statistics:")
+  cat("\n   Modularity ",net$modu)
+  cat("\n   Average path ",net$avepath)
+  cat("\n   N edges ",net$nedges)
+  cat("\n   N vertices ",net$nverts)
+  cat("\n   Transitivity ",net$transit)
+  cat("\n   Diameter ",net$diam)
+  cat("\n   Is connected? ",net$connect)
+}
+
 
 # 
 # https://jcasasr.wordpress.com/2015/02/03/plotting-the-coreness-of-a-network-with-r-and-igraph/

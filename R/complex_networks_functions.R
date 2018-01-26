@@ -179,21 +179,35 @@ example_from_kolaczyk <- function(){
 
 # Calculate some statistics about the disease gene network
 get_gstatistics <- function(gt) {
-  gstats <- data.frame(
-    modularity=modularity(gt, membership(cluster_walktrap(gt))),
+  
+  net <- data.frame( 
+    modu=modularity(gt, membership(cluster_walktrap(gt))),
     avepath=average.path.length(gt),
     nedges=ecount(gt),
     nverts=vcount(gt),
     transit=transitivity(gt),
-    degree=(degree(gt)),
-    diameter=diameter(gt,weights=NA),
-    connect=is.connected(gt),
+    diam=diameter(gt,weights=NA),
+    connect=is.connected(gt))
+    
+  nodes <- data.frame(   
     closeness=closeness(gt),
+    degree=(degree(gt)),
     betweenness=betweenness(gt,directed=FALSE),
     density=graph.density(gt),
     hubness=hub_score(gt)$vector,
     authority=authority.score(gt)$vector)
   #power=bonpow(gt))
+  
+  cat("\nOverall network statistics:")
+  cat("\n   Modularity ",net$modu)
+  cat("\n   Average path ",net$avepath)
+  cat("\n   N edges ",net$nedges)
+  cat("\n   N vertices ",net$nverts)
+  cat("\n   Transitivity ",net$transit)
+  cat("\n   Diameter ",net$diam)
+  cat("\n   Is connected? ",net$connect)
+  
+  gstats <- list(net, nodes)
   return(gstats)
 }
 

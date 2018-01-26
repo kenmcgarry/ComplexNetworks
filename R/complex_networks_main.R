@@ -4,7 +4,7 @@
 # therapeutic interventions?
 # commenced 4/1/18
 
-#load("complexnets-12thJanuary2018.RData") # load in required data - the contents will change regulary
+#load("complexnets_25thJan2018.RData") # load in required data - the contents will change regulary
 memory.limit(2210241024*1024) # use more RAM memory (22 GBs)
 setwd("C:/R-files/complexnetworks")    # point to where my code lives
 source("complex_networks_functions.R")  # load in the functions required for this work. 

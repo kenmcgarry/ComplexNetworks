@@ -25,11 +25,14 @@ V(ppi_net)[1:vcount(ppi_net)]$target <- 0   # Intialise all to zeros
 V(ppi_net)[1:vcount(ppi_net)]$hub <- 0   # Intialise all to zeros
 V(ppi_net)[1:vcount(ppi_net)]$type <- "unknown"   # Intialise protein "type" to unknown
 
-ppi_net <- set_vertex_attr(ppi_net,"target",joint_ppi,1) # Now assign "1" if protein is a target
+ppi_net <- set_vertex_attr(ppi_net,"target",joint_ppi,1) # Now assign "1" if protein is a target (very neat!)
+gs <- get_gstatistics(ppi_net)
+
+
 
 #digenes <- file.path('C://R-files//proteins', 'all_gene_disease_associations.tsv.gz') %>% read.delim(na.strings='')
-
-# read in protein classification based on pharos database - it has the protein families
+# read in protein classification based on pharos database (it has the protein families),
+# assign them to ppi network for classification algorithyms.
 protein_class <- read.csv("c:\\R-files\\proteins\\pharos_v4.6.2.csv", header=TRUE,stringsAsFactors = FALSE,na.strings=c("", "NA"))
 protein_class <- protein_class[,c(3,8)]
 names(protein_class)[names(protein_class)=="DTO.Family"] <- "TargetClass"

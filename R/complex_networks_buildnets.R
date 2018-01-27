@@ -38,11 +38,11 @@ layout <- layout_nicely(dtn)
 # Start building kernal predictors
 library(kernlab)
 
-clu <- clusters(dtn)
-dtn.gc <- induced.subgraph(dtn,clu$membership == which.max(clu$csize))
-L <- as.matrix(graph.laplacian(dtn.gc))
+clu <- clusters(ppi_net)
+ppi_net.gc <- induced.subgraph(dtn,clu$membership == which.max(clu$csize))
+L <- as.matrix(graph.laplacian(ppi_net.gc))
 egl <- eigen(L) 
-nv <- vcount(dtn.gc)
+nv <- vcount(ppi_net.gc)
 
 # create and plot the three eigenvectors for the 1st, 2nd and 3rd largest weights
 for (j in 1:3){

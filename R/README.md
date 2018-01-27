@@ -6,6 +6,8 @@ The following files:
 
 `complex_networks_plots.R` produces plots that appear in the paper.
 
+`complex_networks_tables.R` produces tables that appear in the paper.
+
 `complex_networks_data.R` reads the HINT data and target data in. Proprocess data and removes duplicate entries.
 
 `complex_networks_buildnets.R` creates the igraph network structures and conducts statistical analysis on them. Looks for hub proteins and those proteins that are hubs AND targets.

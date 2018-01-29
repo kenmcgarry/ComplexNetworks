@@ -36,21 +36,10 @@ ppi_net <- induced_subgraph(ppi_net,V(ppi_net)$comp==1)
 
 ppi_net <- set_vertex_attr(ppi_net,"target",joint_ppi,1) # Now assign "1" if protein is a target (very neat!)
 gs <- get_gstatistics(ppi_net)
+gs$nodes$central <- abs(gs$nodes$central)
 
 
 
-#digenes <- file.path('C://R-files//proteins', 'all_gene_disease_associations.tsv.gz') %>% read.delim(na.strings='')
-# read in protein classification based on pharos database (it has the protein families),
-# assign them to ppi network for classification algorithyms.
-protein_class <- read.csv("c:\\R-files\\proteins\\pharos_v4.6.2.csv", header=TRUE,stringsAsFactors = FALSE,na.strings=c("", "NA"))
-protein_class <- protein_class[,c(3,8)]
-names(protein_class)[names(protein_class)=="DTO.Family"] <- "TargetClass"
-names(protein_class)[names(protein_class)=="HGNC.Sym"] <- "Gene"
-protein_class <- protein_class[!(duplicated(protein_class[c("TargetClass","Gene")]) | duplicated(protein_class[c("TargetClass","Gene")], fromLast = TRUE)), ]
-protein_class <- na.omit(protein_class)
-
-
-#ppi_net <- delete.vertices(ppi_net, V(ppi_net)[degree(ppi_net) < 11])   # probably wrong thing to do!
 ######################### PLOT NETWORKS ######################################
 # link salience - might solve hub idenification problem
 # https://www.nature.com/articles/ncomms1847
@@ -58,33 +47,29 @@ protein_class <- na.omit(protein_class)
 # Calculate power law for our protein networks - any diff between hubs and non-hubs?
 # also graph coreness https://jcasasr.wordpress.com/2015/02/03/plotting-the-coreness-of-a-network-with-r-and-igraph/
 # get subgraphs based on coreness measure
-subgraph <- make_ego_graph(ghint, order=1, c("RPSA", "RPS2", "RPL7"))
-plot(subgraph[[3]])
 
-coreness = graph.coreness(as.undirected(subgraph[[1]]))
+subgraph <- make_ego_graph(ppi_net, order=1, c("RPSA", "PNMA1", "MZT2B","SDC2","TUBGCP4"))
+
+sg <- 4;
+
+coreness = graph.coreness(as.undirected(subgraph[[sg]]))
 head(sort(coreness, decreasing=TRUE))
 colbar <- rainbow(max(coreness));
+ll <- corenessLayout(subgraph[[sg]]);
+plot(subgraph[[sg]], layout=ll, vertex.size=15, vertex.color=colbar[coreness], 
+     vertex.label.color= "black", vertex.frame.color=colbar[coreness], main='');
 
-# get subgraphs based on top ranking coreness measure
-subgraph <- make_ego_graph(ghint, order=1, c("RPSA", "RPS2", "RPL7","RPL10","TP53"))
-plot(subgraph[[5]])
-
-# create layout
-ll <- corenessLayout(subgraph[[5]]);
-# plot
-plot(subgraph[[5]], layout=ll, vertex.size=15, vertex.color=colbar[coreness], vertex.frame.color=colbar[coreness], main='Coreness');
 
 # Try different layouts for best looking graph
-net <- subgraph[[1]]
+net <- subgraph[[sg]]
 # create network and plot it
 layouts <- grep("^layout_",ls("package:igraph"), value=TRUE)[-1]
 # Remove layouts that do not apply to our graph.
 layouts <- layouts[!grepl("bipartite|merge|norm|sugiyama|tree", layouts)]
-par(mfrow=c(3,3), mar=c(1,1,1,1))
+par(mfrow=c(4,4), mar=c(1,1,1,1))
 for (layout in layouts) {
   print(layout)
   l <-do.call(layout,list(net))
   plot(net, edge.arrow.mode=0, layout=l, main=layout) }
-######################### PLOT NETWORKS ######################################
 
 

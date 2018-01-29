@@ -29,7 +29,14 @@ ppi <- ppi %>%
 
 rm(bioplex,ppi_hint)
 
-
+# read in protein classification based on pharos database (it has the protein families),
+# assign them to ppi network for classification algorithyms.
+protein_class <- read.csv("c:\\R-files\\proteins\\pharos_v4.6.2.csv", header=TRUE,stringsAsFactors = FALSE,na.strings=c("", "NA"))
+protein_class <- protein_class[,c(3,8)]
+names(protein_class)[names(protein_class)=="DTO.Family"] <- "TargetClass"
+names(protein_class)[names(protein_class)=="HGNC.Sym"] <- "Gene"
+protein_class <- protein_class[!(duplicated(protein_class[c("TargetClass","Gene")]) | duplicated(protein_class[c("TargetClass","Gene")], fromLast = TRUE)), ]
+protein_class <- na.omit(protein_class)
 
 
 

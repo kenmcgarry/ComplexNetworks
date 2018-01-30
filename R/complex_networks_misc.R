@@ -15,7 +15,7 @@ not_ppi <- un_targets[!un_targets %in% un_ppi]  # here are the 567 targets)
 
 # remove multiple genes
 ppi$Gene_A <-gsub("|.*","",ppi$Gene_A)
-ppi$Gene_B <-gsub("\\|.*","",ppi$Gene_B)  # gsub("\\..*","",a)
+ppi$Gene_B <-gsub("\\|.*","",ppi$Gene_B)  # 
 
 # dataframe containing targets and non-target proteins. Annotate with:
 # 1. target; 2. hub; 

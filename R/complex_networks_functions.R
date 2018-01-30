@@ -25,6 +25,10 @@ library(infotheo)
 library(clusterProfiler)
 library(linkcomm)
 
+data(go)
+data(gene_GO_terms)
+data(GO_IC)
+
 # Makes first letter of string uppercase
 firstup <- function(x) {
   substr(x, 1, 1) <- toupper(substr(x, 1, 1))
@@ -180,7 +184,6 @@ example_from_kolaczyk <- function(){
 # Calculate some statistics about the disease gene network
 # returns a list: net and nodes
 get_gstatistics <- function(gt) {
-  
   net <- data.frame( 
     modu=modularity(gt, membership(cluster_walktrap(gt))),
     avepath=average.path.length(gt),
@@ -211,7 +214,6 @@ get_gstatistics <- function(gt) {
   cat("\n   Transitivity ",net$transit)
   cat("\n   Diameter ",net$diam)
   cat("\n   Is connected? ",net$connect)
-  
   gstats = list(net=net, nodes=nodes)
   return(gstats)
 }
@@ -305,6 +307,31 @@ delete_isolates <- function(gt) {
   gt <- delete.vertices(gt, isol)
   return(gt)
 
+}
+
+
+# annotate_go() will receive a list of proteins and annotate with GO terms it will return
+# a matrix of terms x proteins.
+annotate_go <- function(dm){
+  dm <- dm[dm$ID %in% go$id,] # ensure missing GO terms are removed
+  dm <- dm[dm$ID %in% attributes(GO_IC)$name,] # ensure missing IC terms are removed
+  countdm <- length(unique(dm$DiseaseModule))
+  listdm <- unique(dm$DiseaseModule)
+  #cat("\nFound ",countdm,"Disease Modules.")
+  for (i in 1:countdm){
+    tempmod <- filter(dm,DiseaseModule == listdm[i])
+    tempMF <- filter(tempmod,category =="MF")
+    #cat("\ndismod has ",nrow(tempMF)," MF")
+    cat("\ndismod",listdm[i], "has",length(unique(tempmod$genes))," genes and ",(table(tempmod$category))," GO annotations")
+  }
+  terms_by_disease_module <- split(dm$ID,dm$DiseaseModule)  # do split by disease module
+  terms_by_disease_module <- unname(terms_by_disease_module)   # Remove names for the moment
+  sim_matrix <- get_sim_grid(ontology=go,information_content=GO_IC,term_sets=terms_by_disease_module)
+  # see how the disease modules cluster
+  dist_mat <- max(sim_matrix) - sim_matrix  # need a distance matrix, not a similarity matrix
+  #clusterdetails <- hclust(as.dist(dist_mat),"ave")
+  #plot(hclust(as.dist(dist_mat)))
+  return(sim_matrix)
 }
 
 

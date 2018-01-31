@@ -20,4 +20,3 @@ bar_plot_gg2(hubtargetlist,2,"blue")  # plot targets that are also hubs
 plot_power2(gppi)   # graph of degree power law
 
 
-

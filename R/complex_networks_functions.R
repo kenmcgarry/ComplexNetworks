@@ -309,10 +309,31 @@ delete_isolates <- function(gt) {
 
 }
 
+# goanalysis() will enrich a gene with GO terms
+# depends on clusterprofiler library and several other things...
+# http://www.bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html#go-analysis
+go_analysis <- function(yourgenes,ontotype){
+  cat("\n",yourgenes)
+  eg = bitr(yourgenes, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+  
+  ego <- enrichGO(gene          = eg[,2],
+                  #universe      = names(geneList),
+                  OrgDb         = org.Hs.eg.db,
+                  ont           = ontotype, # one of CC, BP or MF
+                  pAdjustMethod = "BH",
+                  pvalueCutoff  = 0.01,
+                  qvalueCutoff  = 0.05,
+                  readable      = TRUE)
+  
+  return(ego)
+}
+
 
 # annotate_go() will receive a list of proteins and annotate with GO terms it will return
 # a matrix of terms x proteins.
-annotate_go <- function(dm){
+annotate_with_go <- function(dm){
+  category <- c("MF","BP","CC")
+  
   dm <- dm[dm$ID %in% go$id,] # ensure missing GO terms are removed
   dm <- dm[dm$ID %in% attributes(GO_IC)$name,] # ensure missing IC terms are removed
   countdm <- length(unique(dm$DiseaseModule))
@@ -370,6 +391,33 @@ annotate_proteins <- function(drugtargets){
   V(target_ppi)$Unclassified <- 1
   
   return(anno_target)
+}
+
+
+# 
+go_slim_annotation <- function(mylist){
+  
+  myIds <- c("GO:0016564", "GO:0003677", "GO:0004345", "GO:0008265",
+             "GO:0003841", "GO:0030151", "GO:0006355", "GO:0009664",
+             "GO:0006412", "GO:0015979", "GO:0006457", "GO:0005618",
+             "GO:0005622", "GO:0005840", "GO:0015935", "GO:0000311")
+  
+  hsing <- c("GO:0005730","GO:0003723", "GO:0005515", "GO:0006412",   # The GO terms used by (Hsing, 2008)
+             "GO:0006139","GO:0006996", "GO:0030246", "GO:0005840",
+             "GO:0005777","GO:0009719", "GO:0007049", "GO:0004871",
+             "GO:0005654","GO:0008219", "GO:0006118", "GO:0006259",
+             "GO:0050789","GO:0006950", "GO:0005811", "GO:0008135")
+  
+  myCollection <- GOCollection(hsing)
+  fl <- system.file("extdata", "goslim_generic.obo", package="GSEABase")
+  #fl <- system.file("extdata", "goslim_pir.obo", package="GSEABase")
+  slim <- getOBOCollection(fl)
+  go_mf <- goSlim(myCollection, slim, "MF")
+  go_cc <- goSlim(myCollection, slim, "CC")
+  go_bp <- goSlim(myCollection, slim, "BP")
+  
+  data(sample.ExpressionSet)
+  goSlim(sample.ExpressionSet, slim, "MF", evidenceCode="IDA")
 }
 
 

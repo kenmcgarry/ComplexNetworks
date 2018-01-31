@@ -88,7 +88,7 @@ ggplot(G.degree.histogram, aes(x = G.degrees, y = Freq)) +
   scale_x_continuous("Degree",expand = c(0,0),
                      breaks = c(1, 3, 10, 30, 100, 200, 500),
                      trans = "log10") +
-  scale_y_continuous("Frequency",expand=c(0,0),
+  scale_y_continuous("Protein Frequency",expand=c(0,0),
                      breaks = c(1, 3, 10, 30, 100, 300, 1000, 2000),
                      trans = "log10") +
   ggtitle("Degree Distribution (log-log)") +

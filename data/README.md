@@ -3,3 +3,8 @@ interactions from 8 interactome resources (BioGRID, MINT, iRefWeb, DIP, IntAct, 
 
 The `drug.target.interaction.tsv.gz` data is downloaded from DrugCentral is a comprehensive drug information resource for FDA drugs and drugs approved outside USA. The resources can be searched using: drug, target, disease, pharmacologic action, terms. 
 http://drugcentral.org/download
+
+The 'pharos_v4.6.2.csv' is an incomplete list of protein types-according Panther categories. GPCR, TF, IC etc.
+
+The 'BioPlex.csv' adds addtional high confidence PPI interactions to our data. http://bioplex.hms.harvard.edu/
+

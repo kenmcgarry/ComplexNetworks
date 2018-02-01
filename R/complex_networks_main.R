@@ -18,3 +18,15 @@ bar_plot_gg2(drug_targets,1,"red")  # plot all target proteins
 bar_plot_gg2(hubtargetlist,2,"blue")  # plot targets that are also hubs 
 plot_power2(gppi)   # graph of degree power law
 
+# build igraph object, ensuring only great connected unit is returned, prune out bad gene names
+ppi_net <- build_network(ppi)
+gs <- get_gstatistics(ppi_net)
+gs$nodes$central <- abs(gs$nodes$central)
+
+
+
+
+
+
+
+

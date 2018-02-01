@@ -5,6 +5,10 @@
 # unsure if protein targets are part of the giant connected ppi network
 # assign 1=target; 0=non-target to each protein
 
+# remove multiple genes
+ppi$Gene_A <-gsub("\\|.*","",ppi$Gene_A)
+ppi$Gene_B <-gsub("\\|.*","",ppi$Gene_B)  # 
+
 un_targets <- (unique(drug_targets$Gene))        # 1,860 unique protein targets
 length(un_targets)
 un_ppi <- (unique(c(ppi$Gene_A,ppi$Gene_B)))      # 15,792 unique general proteins in ppi
@@ -12,10 +16,6 @@ length(un_ppi)
 
 joint_ppi <- un_targets[un_targets %in% un_ppi]  # 1,293 targets are part of giant connected network (we lose 567 targets!)
 not_ppi <- un_targets[!un_targets %in% un_ppi]  # here are the 567 targets)
-
-# remove multiple genes
-ppi$Gene_A <-gsub("|.*","",ppi$Gene_A)
-ppi$Gene_B <-gsub("\\|.*","",ppi$Gene_B)  # 
 
 # dataframe containing targets and non-target proteins. Annotate with:
 # 1. target; 2. hub; 
@@ -33,6 +33,10 @@ V(ppi_net)[1:vcount(ppi_net)]$type <- "unknown"   # Intialise protein "type" to 
 # get main component only - ignore lessor weakly connected groups
 V(ppi_net)$comp <- components(ppi_net)$membership
 ppi_net <- induced_subgraph(ppi_net,V(ppi_net)$comp==1)
+
+# remove from joint_ppi the lost nodes 
+survivors <- V(ppi_net)$name
+joint_ppi <- un_targets[un_targets %in% survivors] 
 
 ppi_net <- set_vertex_attr(ppi_net,"target",joint_ppi,1) # Now assign "1" if protein is a target (very neat!)
 gs <- get_gstatistics(ppi_net)

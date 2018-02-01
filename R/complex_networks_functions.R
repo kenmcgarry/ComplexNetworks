@@ -24,6 +24,7 @@ library(ontologyIndex)
 library(infotheo)
 library(clusterProfiler)
 library(linkcomm)
+library(GSEABase)
 
 data(go)
 data(gene_GO_terms)
@@ -40,7 +41,6 @@ firstup <- function(x) {
 # DrugCentral is a comprehensive drug information resource for FDA drugs and drugs approved outside USA. The 
 # resources can be searched using: drug, target, disease, pharmacologic action, terms. 
 load_drugtargets <- function(){
-  #drug_targets <- file.path('C://R-files//disease','drug.target.interaction.tsv.gz') %>% read.delim(na.strings='',header =TRUE,stringsAsFactors = FALSE) 
   drug_targets <- read.csv(file="C://R-files//disease//drug.target.interaction.tsv", header=TRUE, sep="\t",stringsAsFactors = FALSE)
   names(drug_targets)[names(drug_targets)=="DRUG_NAME"] <- "DrugName"
   names(drug_targets)[names(drug_targets)=="TARGET_CLASS"] <- "TargetClass"
@@ -372,36 +372,37 @@ go_analysis <- function(yourgenes,ontotype){
 
 # annotate_go() will receive a list of proteins and annotate with GO terms it will return
 # a matrix of terms x proteins.
-annotate_with_go <- function(dm){
+annotate_with_go <- function(ppi_net){
   category <- c("MF","BP","CC")
+  enrich <- c("GO:0017091", "AU-rich element binding","1/1", "23/16982", "0.001354375","RU12","FU")
+  nproteins <- length(V(ppi_net)$name)
+  allproteins <- V(ppi_net)$name
   
-  dm <- dm[dm$ID %in% go$id,] # ensure missing GO terms are removed
-  dm <- dm[dm$ID %in% attributes(GO_IC)$name,] # ensure missing IC terms are removed
-  countdm <- length(unique(dm$DiseaseModule))
-  listdm <- unique(dm$DiseaseModule)
-  #cat("\nFound ",countdm,"Disease Modules.")
-  for (i in 1:countdm){
-    tempmod <- filter(dm,DiseaseModule == listdm[i])
-    tempMF <- filter(tempmod,category =="MF")
-    #cat("\ndismod has ",nrow(tempMF)," MF")
-    cat("\ndismod",listdm[i], "has",length(unique(tempmod$genes))," genes and ",(table(tempmod$category))," GO annotations")
-  }
+  tempgo <- gene_GO_terms[V(ppi_net)$name]  # Annotate!!
+  tempgo <- tempgo[!sapply(tempgo, is.null)]  # Not all proteins have GO annoatations so sadly remove them.
+  # Unfortunalety, we are left with only 13,417 proteins.
+  
+  cc <- go$id[go$name == "cellular_component"]
+  bp <- go$id[go$name == "biological_process"]
+  mf <- go$id[go$name == "molecular_function"] 
+  temp_cc <- lapply(tempgo, function(x) intersection_with_descendants(go, roots=cc, x))
+  temp_bp <- lapply(tempgo, function(x) intersection_with_descendants(go, roots=bp, x))
+  temp_mf <- lapply(tempgo, function(x) intersection_with_descendants(go, roots=mf, x))
+  
   terms_by_disease_module <- split(dm$ID,dm$DiseaseModule)  # do split by disease module
   terms_by_disease_module <- unname(terms_by_disease_module)   # Remove names for the moment
   sim_matrix <- get_sim_grid(ontology=go,information_content=GO_IC,term_sets=terms_by_disease_module)
-  # see how the disease modules cluster
   dist_mat <- max(sim_matrix) - sim_matrix  # need a distance matrix, not a similarity matrix
-  #clusterdetails <- hclust(as.dist(dist_mat),"ave")
-  #plot(hclust(as.dist(dist_mat)))
+ 
   return(sim_matrix)
 }
 
 
 # Add the protein type to the ppi network of target proteins
-annotate_proteins <- function(drugtargets){
+annotate_with_panther <- function(drugtargets){
   # create drug to target network
   
-  # Remove small quantity proteins; Adhesion; Nucler Other; Antibody; CD Molecules; Ribosomal; Cytokine; Surface Antigen; Membrane other
+  # Remove small quantity proteins; Adhesion; Nuclear Other; Antibody; CD Molecules; Ribosomal; Cytokine; Surface Antigen; Membrane other
   drugtargets <-  # Only keep protein target types with at least 50 occurences
       drugtargets %>%
       add_count(TargetClass,sort=TRUE) %>%
@@ -436,10 +437,10 @@ annotate_proteins <- function(drugtargets){
 
 
 # go_slim_annotation() reduces the complexities of numerous GO annoatations into a few key terms.
-# http://www.geneontology.org/page/go-slim-and-subset-guide#On_the_web. I use the GEO
+# http://www.geneontology.org/page/go-slim-and-subset-guide#On_the_web. This uses the GSEABase package.
 go_slim_annotation <- function(mylist){
   
-  myIds <- c("GO:0016564", "GO:0003677", "GO:0004345", "GO:0008265",
+  myids <- c("GO:0016564", "GO:0003677", "GO:0004345", "GO:0008265",
              "GO:0003841", "GO:0030151", "GO:0006355", "GO:0009664",
              "GO:0006412", "GO:0015979", "GO:0006457", "GO:0005618",
              "GO:0005622", "GO:0005840", "GO:0015935", "GO:0000311")

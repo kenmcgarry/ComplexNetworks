@@ -445,20 +445,19 @@ go_slim_annotation <- function(mylist){
   assign("go_mf", TRUE, env=globalenv())
   assign("go_cc", TRUE, env=globalenv())
   assign("go_bp", TRUE, env=globalenv())
-  go_temp_mf <- data.frame(ID=character(43),Count=integer(43),Percent=integer(43),Term=character(43),stringsAsFactors = FALSE); 
-  go_temp_cc <- data.frame(ID=character(35),Count=integer(35),Percent=integer(35),Term=character(35),stringsAsFactors = FALSE); 
-  go_temp_bp <- data.frame(ID=character(71),Count=integer(71),Percent=integer(71),Term=character(71),stringsAsFactors = FALSE); 
+  go_data <- data.frame(ID=character(1),Count=integer(1),Percent=integer(1),Term=character(1),Gene=character(1),DB=character(1),stringsAsFactors = FALSE); 
+  go_temp_mf <- data.frame(ID=character(43),Count=integer(43),Percent=integer(43),Term=character(43),Gene=character(43),DB=character(43),stringsAsFactors = FALSE); 
+  go_temp_cc <- data.frame(ID=character(35),Count=integer(35),Percent=integer(35),Term=character(35),Gene=character(35),DB=character(35),stringsAsFactors = FALSE); 
+  go_temp_bp <- data.frame(ID=character(71),Count=integer(71),Percent=integer(71),Term=character(71),Gene=character(71),DB=character(71),stringsAsFactors = FALSE); 
   
-  hsing <- c("GO:0005730","GO:0003723", "GO:0005515", "GO:0006412",   # The GO terms used by (Hsing, 2008)
-             "GO:0006139","GO:0006996", "GO:0030246", "GO:0005840",
-             "GO:0005777","GO:0009719", "GO:0007049", "GO:0004871",
-             "GO:0005654","GO:0008219", "GO:0006118", "GO:0006259",
-             "GO:0050789","GO:0006950", "GO:0005811", "GO:0008135")
+  go_empty_mf <- data.frame(ID="",Count=0,Percent=0,Term="",Gene="",DB="",stringsAsFactors = FALSE)
+  go_empty_cc <- data.frame(ID="",Count=0,Percent=0,Term="",Gene="",DB="",stringsAsFactors = FALSE)
+  go_empty_bp <- data.frame(ID="",Count=0,Percent=0,Term="",Gene="",DB="",stringsAsFactors = FALSE)
   
-  for (i in 1:1){
+  for (i in 1:length(names(gostuff))){
     myCollection <- GOCollection(gostuff[[i]])
     genename <- names(gostuff[i])
-    #myCollection <- GOCollection(hsing)
+    go_empty_mf$Gene <- genename 
     obo <- system.file("extdata","goslim_generic.obo", package="GSEABase") # generic terms by GO consortium
     #obo <- system.file("extdata","goslim_chembl.obo", package="GSEABase") # Chembl Drug Target developed by Mutowo and Lomax
     #obo <- system.file("extdata","goslim_pir.obo", package="GSEABase") #Protein Info Resource by Darren Natale
@@ -467,9 +466,15 @@ go_slim_annotation <- function(mylist){
     go_cc <- tryCatch(goSlim(myCollection, slim, "CC"),error=function(e) {go_cc <- error_go_cc()})
     go_bp <- tryCatch(goSlim(myCollection, slim, "BP"),error=function(e) {go_bp <- error_go_bp()})
     
-    if(go_mf[1,1] == "error") {go_mf <- repair_go_mf()} else{go_temp_mf$ID <- rownames(go_mf);go_temp_mf[2:4] <- go_mf }
-    if(go_cc[1,1] == "error") {go_cc <- repair_go_cc()} else{go_temp_cc$ID <- rownames(go_cc);go_temp_cc[2:4] <- go_cc }
-    if(go_bp[1,1] == "error") {go_bp <- repair_go_bp()} else{go_temp_bp$ID <- rownames(go_bp);go_temp_bp[2:4] <- go_bp }
+    if(go_mf[1] == "error") {go_empty_mf$DB <- "MF";go_empty_mf$Gene<- genename; rbind(go_data,go_empty_mf)} else{
+      go_temp_mf$ID <- rownames(go_mf);go_temp_mf[2:4] <- go_mf;go_temp_mf$Gene <- rep(genename,43);go_temp_mf$DB <- rep("MF",43);rbind(go_data,go_temp_mf) }
+    if(go_cc[1] == "error") {go_empty_cc$DB <- "CC";go_empty_cc$Gene<- genename; rbind(go_data,go_empty_cc)} else{
+      go_temp_cc$ID <- rownames(go_cc);go_temp_cc[2:4] <- go_cc;go_temp_cc$Gene <- rep(genename,35);go_temp_cc$DB <- rep("CC",35);rbind(go_data,go_temp_cc) }
+    if(go_bp[1] == "error") {go_empty_bp$DB <- "BP";go_empty_bp$Gene<- genename; rbind(go_data,go_empty_bp)} else{
+      go_temp_bp$ID <- rownames(go_bp);go_temp_bp[2:4] <- go_bp;go_temp_bp$Gene <- rep(genename,71);go_temp_bp$DB <- rep("BP",71); rbind(go_data,go_temp_bp) }
+    
+    #go_temp <- rbind(go_temp_bp,go_temp_cc,go_temp_mf)
+    #go_data <- rbind(go_data,go_temp)
   }
   return(go_data)
 }
@@ -477,13 +482,13 @@ go_slim_annotation <- function(mylist){
 # The following functions are to avoid the errors kicked out by goSlim (and crashing R) 
 # when it cant find any terms
 repair_go_mf <- function(){
-  go_default <- "error"
+  go_default <- data.frame(ID="",Count=0,Percent=0,Term="",Gene="",DB="",stringsAsFactors = FALSE)
   return(go_default)}
 repair_go_cc <- function(){
-  go_default <- "error"
+  go_default <- data.frame(ID="",Count=0,Percent=0,Term="",Gene="",DB="",stringsAsFactors = FALSE)
   return(go_default)}
 repair_go_bp <- function(){
-  go_default <- "error"
+  go_default <- data.frame(ID="",Count=0,Percent=0,Term="",Gene="",DB="",stringsAsFactors = FALSE)
   return(go_default)}
 
 error_go_mf <- function(){
@@ -498,3 +503,9 @@ error_go_bp <- function(){
   print("Error detected!")
   go_default <- "error"
   return(go_default)}
+
+hsing <- c("GO:0005730","GO:0003723", "GO:0005515", "GO:0006412",   # The GO terms used by (Hsing, 2008)
+           "GO:0006139","GO:0006996", "GO:0030246", "GO:0005840",
+           "GO:0005777","GO:0009719", "GO:0007049", "GO:0004871",
+           "GO:0005654","GO:0008219", "GO:0006118", "GO:0006259",
+           "GO:0050789","GO:0006950", "GO:0005811", "GO:0008135")

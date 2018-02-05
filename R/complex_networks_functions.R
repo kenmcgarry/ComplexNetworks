@@ -463,9 +463,9 @@ go_slim_annotation <- function(mylist){
     go_cc <- tryCatch(goSlim(myCollection, slim, "CC"),error=function(e) {go_cc <- error_go_cc()})
     go_bp <- tryCatch(goSlim(myCollection, slim, "BP"),error=function(e) {go_bp <- error_go_bp()})
     
-    if(length(go_mf) ==1) {mm[1:43,i]  <- as.vector(matrix(0,ncol=43))} else{
-      go_mf[go_mf$Count != 0,]$Count <- 1;
-      mm[1:43,i] <- go_mf$Count}
+    if(length(go_mf) ==1) {mm[1:43,i]  <- as.vector(matrix(0,ncol=43))} else{  # fill with zeroes if no annotations found
+      go_mf[go_mf$Count != 0,]$Count <- 1; # convert non-zero numbers into 1's
+      mm[1:43,i] <- go_mf$Count}            # found MF annotations, assign to matrix
     if(length(go_cc)==1) {mm[44:78,i] <- as.vector(matrix(0,ncol=35))} else{
       go_cc[go_cc$Count != 0,]$Count <- 1
       mm[44:78,i] <- go_cc$Count}
@@ -473,7 +473,7 @@ go_slim_annotation <- function(mylist){
       go_bp[go_bp$Count != 0,]$Count <- 1
       mm[79:149,i] <- go_bp$Count}
   }
-  return(mm)  # return matrix  # go_mf[go_mf$Count != 0,]$Count <- 1
+  return(mm)  # return matrix  
 }
 
 
@@ -492,6 +492,31 @@ error_go_bp <- function(){
   return("BP: Error detected!")
   #go_default <- "error"
   }
+
+
+# Add the "drug target" class to the "mm" matrix, this will make it ready for classification algorithms.
+# but first remove nodes that do have GO terms.
+give_classlabels_mm <- function(mm){
+
+  survivors <- colnames(mm)
+  mmt <- matrix(0, 1, length(tmp)) 
+  rownames(mmt) <- "targets"
+  # delete nodes without GO terms from ppi_net 
+  biglist <- V(ppi_net)$name
+  lostnodes <- survivors[!biglist %in% survivors]
+  #lostnodes <- lostnodes[is.na(lostnodes)] <- 0
+  ppi_net <-igraph::delete_vertices(ppi_net,lostnodes[1:2020])
+  
+  targets <- drug_targets$Gene  # get the original drug target data
+
+  for(i in 1:length(survivors)){
+    temp <- grep(survivors[i],targets)
+    if(length(temp) != 0){mmt[i] <- 1}
+  }
+  
+  mmt <- rbind(mm,mmt)
+  return(mmt)
+}
 
 give_rownames_mm <- function(){
   gonames <- c("GO:0000988:MF:transcription factor activity, prot...",

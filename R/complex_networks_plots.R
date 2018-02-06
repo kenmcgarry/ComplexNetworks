@@ -96,5 +96,34 @@ ggplot(G.degree.histogram, aes(x = G.degrees, y = Freq)) +
   geom_segment(aes(x = 15, y = 1, xend = 15, yend = 300),color="red",linetype="dashed",size=1)    # Vert
 }
 
+# use examples from Katya's webpage for inspiration!
+# http://kateto.net/network-visualization
+katya_plot <- function(){
+  subby <- subgraph.edges(ppi_net, 100:250, 100:250)
+  l <- layout_with_kk(subby)
+  nodesize <- matrix(8,1,length(V(subby)$name))  #
+  V(subby)[target == 1]$color <- "yellow"
+  V(subby)[target == 0]$color <- "lightblue"
+  V(subby)[target == 1]$vertex.size <- 10
+  V(subby)[target == 0]$vertex.size <- 6
+  nodesize <- V(subby)$vertex.size
+  V(subby)$frame.color <- "white"
+  plot(subby,layout=layout_with_kk,vertex.label.color="black", vertex.size=nodesize, 
+       vertex.label.family = "sans")
+  
+  tkid <-tkplot(subby)
+  #tkid is the id of the tkplot that will open, drag an drop nodes around to your
+  # satifaction. Keep calling next two lines until its right
+  l <- tkplot.getcoords(tkid)
+  # grab the coordinates from tkplot
+  plot(subby, layout=l,vertex.label.color="black", vertex.size=nodesize,vertex.label.family = "sans")
+  # When it came to saving the file I had a devil of a job, only a screen capture
+  # using snipping tool gave a decent (if a bit blurry) figure. PDF versions had 
+  # to be cropped and were unsatisfying quality-wise.
+}
+
+
+
+
 
 

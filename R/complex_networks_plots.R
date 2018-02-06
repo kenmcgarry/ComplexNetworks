@@ -120,6 +120,16 @@ katya_plot <- function(){
   # When it came to saving the file I had a devil of a job, only a screen capture
   # using snipping tool gave a decent (if a bit blurry) figure. PDF versions had 
   # to be cropped and were unsatisfying quality-wise.
+  
+  getnames <- V(subby)[target == 1]
+  getnames <- names(getnames)
+  
+  for(i in 1:length(getnames)){
+  temp <- filter(drug_targets,Gene == getnames[i])
+  drugs <- rbind(drugs,temp)
+  }
+  
+  return(drugs)
 }
 
 

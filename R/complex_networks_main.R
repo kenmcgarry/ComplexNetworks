@@ -7,8 +7,10 @@
 #load("complexnets_1stFebruary2018.RData") # load in required data - the contents will change regulary
 memory.limit(2210241024*1024) # use more RAM memory (22 GBs)
 setwd("C:/R-files/complexnetworks")    # point to where my code lives
-load("complexnets_5thFebruary2018.RData")
+load("complexnets_6thFebruary2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
+
+# only use these files if you intend building up data from scratch
 source("complex_networks_data.R")  # load in the ppi data sets, GO, OMIM, drug targets etc.
 source("complex_networks_buildnets.R")  # create a PPI network, detemine hubs and targets
 source("complex_networks_plots.R")  # load in the plotting functions used in paper. 

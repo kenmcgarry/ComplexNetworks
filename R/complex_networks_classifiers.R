@@ -19,14 +19,24 @@ svm_model <- ksvm(targets~.,data=mmi,kernel="rbfdot",
 targettype <- predict(svm_model,mmi)
 table(targettype,mmi$targets)
 
+targettype <- as.numeric(targettype)  # change for prediction()
+
 for (i in 1:length(targettype)){
   if(targettype[i] == 1) {  
      targettype[i] <- runif(1, 0.69, 0.99)}
 }
 
-pred <- prediction(as.list(targettype),as.list(mmi$targets))
-roc.perf <- performance(pred, measure = "tpr", x.measure = "fpr")
-plot(roc.perf)
-abline(a=0, b= 1)
+# https://www.r-bloggers.com/a-small-introduction-to-the-rocr-package/
+pred <- prediction(targettype,mmi$targets)
+roc1.perf <- performance(pred, measure = "tpr", x.measure = "fpr")
+plot(roc1.perf)
+
+roc3.perf <- performance(pred, "prec", "rec")
+plot(roc3.perf)
+
+roc4.perf <- performance(pred, "spec", "sens")
+plot(roc4.perf)
+
+# http://amunategui.github.io/smote/  # Supersampling Rare Events - build up smaller target class
 
 

@@ -16,23 +16,7 @@ mmi <- data.frame(mmi)
 
 mtest <- mmt[,1001:2000]
 mtest <- data.frame(mtest)
-#mmi$targets <- as.factor(mmi$targets)
 
-#------ conversion from factors to ints ------
-targettype <- as.numeric(targettype)
-for (i in 1:length(targettype)){
-  if(targettype[i] == 1) {  
-    targettype[i] <- 0}}
-for (i in 1:length(targettype)){
-  if(targettype[i] == 2) {  
-    targettype[i] <- 1}}
-
-for (i in 1:length(targettype)){
-  if(targettype[i] == 1) {  
-     targettype[i] <- runif(1, 7.0, 9.9)}}
-for (i in 1:length(targettype)){
-  if(targettype[i] == 0) {  
-    targettype[i] <- runif(1,0.01,0.02)}}
 
 # http://amunategui.github.io/smote/  # Supersampling Rare Events - build up smaller target class
 # https://topepo.github.io/caret/index.html
@@ -98,12 +82,18 @@ rownames(xxtest) <- colnames(xtest)
 #############################################################
 
 # Ok, so retain Random Forest
-rf_fit <- train(as.factor(targets) ~., data=xtrain, method = "ranger",importance = "impurity")
+rf_fit <- train(as.factor(targets) ~., data=xtrain, method = "ranger",importance = "impurity_corrected")# 
+vimport <- rf_fit[[11]]
+vimport <- vimport$variable.importance
+vimport <- data.frame(GOterm=names(vimport),importance=unname(vimport),stringsAsFactors = FALSE)
+vimport <- vimport[order(vimport$importance,decreasing=TRUE),]
+head(vimport,10)
+
 targettype <- predict(rf_fit,xtrain)
 targettype <- factor2int((targettype))
 pred       <- prediction(targettype,xtrain$targets)
 roc1.perf  <- performance(pred, "tpr", "fpr")
-plot(roc1.perf)
+plot(roc1.perf,col="red", lwd=5)
 
 targettype <- predict(rf_fit,xtest)
 acc <- table(xtest$targets, targettype)
@@ -112,7 +102,7 @@ cat("\naccuracy calculated by (TP + TN)/(TP + TN + FP + FN) = ",(TP + TN)/(TP + 
 targettype <- factor2int(targettype)
 pred       <- prediction(targettype,xtest$targets)
 roc2.perf  <- performance(pred, "tpr", "fpr")
-plot(roc2.perf)
+plot(roc2.perf,add = TRUE, col="blue",lwd=5)
 
 perf <- performance(pred, measure = "auc")
 cat("\nAUC: ", as.numeric(perf@y.values)) 
@@ -125,4 +115,12 @@ cutoff = slot(perf, "x.values")[[1]][ind]
 print(c(accuracy= acc, cutoff = cutoff))
 
 
+#pred1 <- prediction(Avec.pred1, Avec)
+#perf1 <- performance(pred1, "tpr", "fpr")
+#plot(perfall, col="red", lwd=5)
+#plot(perf1, add = TRUE, col="blue",lwd=5)
+#abline(a=0, b= 1,lty=2 )
+# CHUNK 33
+#perf1.auc <- performance(pred1, "auc")
+#slot(perf1.auc, "y.values")
 

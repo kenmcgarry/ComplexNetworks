@@ -7,14 +7,25 @@ library(ROCR)
 library(kernlab)
 library("e1071")
 library(caret)
+library(data.table)
+library(ranger)
 
 #  matrix mmt [150 x 12997] contains the raw data, needs to split. Row 150 contains "class" labels.
-mmi <- mmt[,1:6000]
+mmi <- mmt[,1:1000]
 mmi <- data.frame(mmi)
 
-mtest <- mmt[,6001:12000]
+mtest <- mmt[,1001:2000]
 mtest <- data.frame(mtest)
 #mmi$targets <- as.factor(mmi$targets)
+
+#------ conversion from factors to ints ------
+targettype <- as.numeric(targettype)
+for (i in 1:length(targettype)){
+  if(targettype[i] == 1) {  
+    targettype[i] <- 0}}
+for (i in 1:length(targettype)){
+  if(targettype[i] == 2) {  
+    targettype[i] <- 1}}
 
 for (i in 1:length(targettype)){
   if(targettype[i] == 1) {  
@@ -33,7 +44,7 @@ targets <- as.factor(targets)
 testtargets <- mtest[150,];testtargets <- t(testtargets);rownames(testtargets) <- NULL; colnames(testtargets) <- NULL 
 testtargets <- as.factor(testtargets)
 
-rf_fit <- train(as.factor(targets) ~., data = t(mmi),method = "ranger")
+rf_fit <- train(as.factor(targets) ~., data = t(mmi[1:149,]),method = "ranger")
 targettype <- predict(rf_fit,t(mmi))
 
 # https://www.r-bloggers.com/a-small-introduction-to-the-rocr-package/
@@ -58,9 +69,13 @@ table(targettype2,targets)
 roc2.perf <- performance(pred2, "tpr", "fpr")
 plot(roc2.perf)
 
+#===============
 # poor accuracy might be solved by using fewer non-target exemplars
-mcrap <- t(mmt)
-mcrap <- as.data.frame(mcrap)
+mcrap <- data.table::transpose(as.data.frame(mmt))
+mcrap <- data.frame(mcrap)
+colnames(mcrap) <- rownames(mmt)
+rownames(mcrap) <- colnames(mmt)
+
 positives <- mcrap[mcrap$targets == 1,]  # get all targets (1,443)
 negatives <- mcrap[mcrap$targets == 0,]  # get all targets (11,554)
 negatives <- sample_n(negatives, nrow(positives)) # only use 1,443 of them to match positives
@@ -75,17 +90,38 @@ xtest <- data.frame(balanced_dat[-tindex,])
 ytrain <- xtrain[,150]  # class labels for training data
 ytest <- xtest[,150]   # class labels for test data
 ytest <- as.factor(ytest); #rownames(ytest) <- NULL; colnames(ytest) <- NULL
-#xtest <- t(xtest)
-xtest <- data.frame(xtest)
+
+xxtest <- data.table::transpose(xtest)
+colnames(xxtest) <- rownames(xtest)
+rownames(xxtest) <- colnames(xtest)
+
+#############################################################
 
 # Ok, so retain Random Forest
-rf_fit <- train(as.factor(ytest) ~., data=(xtest), method = "ranger")
-#targettype <- predict(rf_fit,t(xtrain))
+rf_fit <- train(as.factor(targets) ~., data=xtrain, method = "ranger",importance = "impurity")
+targettype <- predict(rf_fit,xtrain)
+targettype <- factor2int((targettype))
+pred       <- prediction(targettype,xtrain$targets)
+roc1.perf  <- performance(pred, "tpr", "fpr")
+plot(roc1.perf)
 
+targettype <- predict(rf_fit,xtest)
+table(xtest$targets, targettype)
+# (TP + TN)/(TP + TN + FP + FN)
+targettype <- factor2int(targettype)
+pred       <- prediction(targettype,xtest$targets)
+roc2.perf  <- performance(pred, "tpr", "fpr")
+plot(roc2.perf)
 
+perf <- performance(pred, measure = "auc")
+cat("\nAUC: ", as.numeric(perf@y.values)) 
+perf <- performance(pred, measure = "acc")
+cat("\nAccuracy: ",max(perf@x.values[[1]]) )
 
-
-
+ind = which.max(slot(perf,"x.values")[[1]] )
+acc = slot(perf, "y.values")[[1]][ind]
+cutoff = slot(perf, "x.values")[[1]][ind]
+print(c(accuracy= acc, cutoff = cutoff))
 
 
 

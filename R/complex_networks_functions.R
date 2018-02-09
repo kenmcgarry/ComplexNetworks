@@ -676,3 +676,21 @@ hsing <- c("GO:0005730","GO:0003723", "GO:0005515", "GO:0006412",   # The GO ter
            "GO:0005777","GO:0009719", "GO:0007049", "GO:0004871",
            "GO:0005654","GO:0008219", "GO:0006118", "GO:0006259",
            "GO:0050789","GO:0006950", "GO:0005811", "GO:0008135")
+
+factor2int <- function(targettype){
+  targettype <- as.numeric(targettype)
+  for (i in 1:length(targettype)){
+    if(targettype[i] == 1) {  
+      targettype[i] <- 0}}
+  for (i in 1:length(targettype)){
+    if(targettype[i] == 2) {  
+      targettype[i] <- 1}}
+
+  for (i in 1:length(targettype)){
+    if(targettype[i] == 1) {  
+      targettype[i] <- runif(1, 7.0, 9.9)}}
+  for (i in 1:length(targettype)){
+    if(targettype[i] == 0) {  
+      targettype[i] <- runif(1,0.01,0.02)}}
+  return(targettype)
+}

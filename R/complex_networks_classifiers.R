@@ -106,8 +106,9 @@ roc1.perf  <- performance(pred, "tpr", "fpr")
 plot(roc1.perf)
 
 targettype <- predict(rf_fit,xtest)
-table(xtest$targets, targettype)
-# (TP + TN)/(TP + TN + FP + FN)
+acc <- table(xtest$targets, targettype)
+acc <- as.vector(acc); TN <- acc[1]; FN <- acc[2]; FP <- acc[3]; TP <- acc[4]  
+cat("\naccuracy calculated by (TP + TN)/(TP + TN + FP + FN) = ",(TP + TN)/(TP + TN + FP + FN))
 targettype <- factor2int(targettype)
 pred       <- prediction(targettype,xtest$targets)
 roc2.perf  <- performance(pred, "tpr", "fpr")

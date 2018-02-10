@@ -87,7 +87,7 @@ vimport <- rf_fit[[11]]
 vimport <- vimport$variable.importance
 vimport <- data.frame(GOterm=names(vimport),importance=unname(vimport),stringsAsFactors = FALSE)
 vimport <- vimport[order(vimport$importance,decreasing=TRUE),]
-head(vimport,10)
+goterms <- head(vimport,15)
 
 targettype <- predict(rf_fit,xtrain)
 targettype <- factor2int((targettype))
@@ -114,6 +114,15 @@ acc = slot(perf, "y.values")[[1]][ind]
 cutoff = slot(perf, "x.values")[[1]][ind]
 print(c(accuracy= acc, cutoff = cutoff))
 
+# Examine freq counts of GO terms between targets and non-target proteins on top 15 terms
+freqtargets <- filter(balanced_dat, targets ==1)
+freqplain <- filter(balanced_dat, targets ==0)
+importantGO <- goterms$GOterm; importantGO <- gsub("\\.", ":", importantGO); 
+importantGO <- substr(importantGO, start = 1, stop = 10)
+freqplain <- filter(freqplain, ss== importantGO)
+
+
+freqtargets <- ss
 
 #pred1 <- prediction(Avec.pred1, Avec)
 #perf1 <- performance(pred1, "tpr", "fpr")
@@ -123,4 +132,3 @@ print(c(accuracy= acc, cutoff = cutoff))
 # CHUNK 33
 #perf1.auc <- performance(pred1, "auc")
 #slot(perf1.auc, "y.values")
-

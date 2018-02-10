@@ -115,20 +115,62 @@ cutoff = slot(perf, "x.values")[[1]][ind]
 print(c(accuracy= acc, cutoff = cutoff))
 
 # Examine freq counts of GO terms between targets and non-target proteins on top 15 terms
-freqtargets <- filter(balanced_dat, targets ==1)
+freqtarget <- filter(balanced_dat, targets ==1)
 freqplain <- filter(balanced_dat, targets ==0)
 importantGO <- goterms$GOterm; importantGO <- gsub("\\.", ":", importantGO); 
 importantGO <- substr(importantGO, start = 1, stop = 10)
-freqplain <- filter(freqplain, ss== importantGO)
+
+tempplain <- freqplain %>% dplyr:: select(starts_with(importantGO[1]))
+for (i in 1:length(importantGO)){
+  temp <- freqplain %>% dplyr:: select(starts_with(importantGO[i]))
+  tempplain <- cbind(temp,tempplain)
+}
+tempplain <- tempplain[,1:15] # get rid of last entry
+
+freqplain <- data.frame(term="",present=0,absent=0,stringsAsFactors = FALSE)
+for (i in 1:length(importantGO)){
+  freqplain[i,1] <- importantGO[i]; 
+  temptable <- as.vector(table(tempplain[,i]))
+  freqplain[i,2]  <- temptable[1]
+  freqplain[i,3] <- temptable[2]
+  }
+
+temptarget <- freqtarget %>% dplyr:: select(starts_with(importantGO[1]))
+for (i in 1:length(importantGO)){
+  temp <- freqtarget %>% dplyr:: select(starts_with(importantGO[i]))
+  temptarget <- cbind(temp,temptarget)
+}
+temptarget <- temptarget[,1:15] # get rid of last entry
+
+freqtarget <- data.frame(term="",present=0,absent=0,stringsAsFactors = FALSE)
+for (i in 1:length(importantGO)){
+  freqtarget[i,1] <- importantGO[i]; 
+  temptable <- as.vector(table(temptarget[,i]))
+  freqtarget[i,2]  <- temptable[1]
+  freqtarget[i,3] <- temptable[2]
+}
 
 
-freqtargets <- ss
+freqtarget2 <- melt(freqtarget,id.var="term")
+colnames(freqtarget2)[2] <- "GOterm"
+ggplot(freqtarget2, aes(x = term, y = value, fill = GOterm)) + 
+  theme(axis.text.x=element_text(face="bold",angle=40,hjust=1,size=12)) +
+  theme(axis.text.y=element_text(face="bold",angle=0,hjust=1,size=12)) +
+  ylab("Frequency counts of terms") + 
+  xlab("") +
+  theme(axis.title.y = element_text(color="black", size=14, face="bold")) +
+  geom_bar(stat = "identity")
 
-#pred1 <- prediction(Avec.pred1, Avec)
-#perf1 <- performance(pred1, "tpr", "fpr")
-#plot(perfall, col="red", lwd=5)
-#plot(perf1, add = TRUE, col="blue",lwd=5)
-#abline(a=0, b= 1,lty=2 )
-# CHUNK 33
-#perf1.auc <- performance(pred1, "auc")
-#slot(perf1.auc, "y.values")
+freqplain2 <- melt(freqplain,id.var="term")
+freqplain2$term <- as.factor(freqplain2$term)
+freqplain2$value <- as.integer(freqplain2$value)
+colnames(freqplain2)[2] <- "GOterm"
+
+ggplot(freqplain2, aes(term, value, fill = GOterm)) + 
+  geom_bar(stat = "identity") +
+  theme(axis.text.x=element_text(face="bold",angle=40,hjust=1,size=12)) +
+  theme(axis.text.y=element_text(face="bold",angle=0,hjust=1,size=12)) +
+  ylab("Frequency counts of terms") + 
+  xlab("")+
+  theme(axis.title.y = element_text(color="black", size=14, face="bold")) 
+  

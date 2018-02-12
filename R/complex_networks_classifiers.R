@@ -82,7 +82,7 @@ rownames(xxtest) <- colnames(xtest)
 #############################################################
 
 # Ok, so retain Random Forest
-rf_fit <- train(as.factor(targets) ~., data=xtrain, method = "ranger",importance = "impurity_corrected")# 
+rf_fit <- train(as.factor(targets) ~., data=xtrain, method = "ranger")# 
 vimport <- rf_fit[[11]]
 vimport <- vimport$variable.importance
 vimport <- data.frame(GOterm=names(vimport),importance=unname(vimport),stringsAsFactors = FALSE)
@@ -94,6 +94,62 @@ targettype <- factor2int((targettype))
 pred       <- prediction(targettype,xtrain$targets)
 roc1.perf  <- performance(pred, "tpr", "fpr")
 plot(roc1.perf,col="red", lwd=5)
+roc2.perf  <- performance(pred, "sens", "spec")
+plot(roc2.perf,col="red", lwd=5)
+roc3.perf  <- performance(pred, "prec", "rec")
+plot(roc3.perf,col="red", lwd=5)
+
+x <- roc1.perf@x.values
+y <- roc1.perf@y.values
+y <- as.numeric(as.character(unlist(y[[1]])))
+x <- as.numeric(as.character(unlist(x[[1]])))
+#qplot(x,y, geom="point",ylab="True Positive Rate",xlab="False Positive Rate")
+df1 <- data.frame(x,y)
+x <- roc2.perf@x.values
+y <- roc2.perf@y.values
+y <- as.numeric(as.character(unlist(y[[1]])))
+x <- as.numeric(as.character(unlist(x[[1]])))
+df2 <- data.frame(x,y)
+
+# Now do ROC graph
+ggplot(df1,aes(x,y))+
+  geom_line(aes(color="Train data ROC"),size=2)+
+  geom_line(data=df2,aes(color="Test data ROC"),size=2)+
+  labs(x="False Positive Rate",y="True Positive Rate") +
+  labs(color="Legend") +
+  theme(legend.position = c(0.8, 0.2))
+
+# now do PR graph
+targettype <- predict(rf_fit,xtrain)
+targettype <- factor2int((targettype))
+pred <- prediction(targettype,xtrain$targets)
+roc3.perf  <- performance(pred, "prec", "rec")
+x <- roc3.perf@x.values
+y <- roc3.perf@y.values
+y <- as.numeric(as.character(unlist(y[[1]])))
+x <- as.numeric(as.character(unlist(x[[1]])))
+df3 <- data.frame(y,x)
+df3 <- na.omit(df3)
+
+targettype <- predict(rf_fit,xtest)
+targettype <- factor2int(targettype)
+pred       <- prediction(targettype,xtest$targets)
+roc4.perf  <- performance(pred, "prec", "rec")
+x <- roc4.perf@x.values
+y <- roc4.perf@y.values
+y <- as.numeric(as.character(unlist(y[[1]])))
+x <- as.numeric(as.character(unlist(x[[1]])))
+df4 <- data.frame(x,y)
+df4 <- na.omit(df4)
+  
+ggplot(df3,aes(x,y))+
+  geom_line(aes(color="Train data PR"),size=2)+
+  geom_line(data=df4,aes(color="Test data PR"),size=2)+
+  labs(x="Precision",y="Recall") +
+  labs(color="Legend") +
+  theme(legend.position = c(0.8, 0.2))
+
+
 
 targettype <- predict(rf_fit,xtest)
 acc <- table(xtest$targets, targettype)
@@ -156,7 +212,7 @@ colnames(freqtarget2)[2] <- "GOterm"
 ggplot(freqtarget2, aes(x = term, y = value, fill = GOterm)) + 
   theme(axis.text.x=element_text(face="bold",angle=40,hjust=1,size=12)) +
   theme(axis.text.y=element_text(face="bold",angle=0,hjust=1,size=12)) +
-  ylab("Frequency counts of terms") + 
+  ylab("Frequency counts of target terms") + 
   xlab("") +
   theme(axis.title.y = element_text(color="black", size=14, face="bold")) +
   geom_bar(stat = "identity")
@@ -168,9 +224,27 @@ colnames(freqplain2)[2] <- "GOterm"
 
 ggplot(freqplain2, aes(term, value, fill = GOterm)) + 
   geom_bar(stat = "identity") +
+  geom_rect(aes(xmin=0, xmax=16, ymin=500, ymax=1500), fill="white") +
+  scale_y_continuous(limits=c(0,NA), breaks=(yticks), labels=yticks) +
+  
   theme(axis.text.x=element_text(face="bold",angle=40,hjust=1,size=12)) +
   theme(axis.text.y=element_text(face="bold",angle=0,hjust=1,size=12)) +
-  ylab("Frequency counts of terms") + 
+  ylab("Frequency counts of non-target terms") + 
   xlab("")+
   theme(axis.title.y = element_text(color="black", size=14, face="bold")) 
   
+###### break y-axis  ######
+yticks <- c(0, 50, 100, 200, 500, 1000, 1500)
+mycols <- c("red","red","red","red","red","red","red","red","red","red","red","red","red","red","red",
+            "cyan","cyan","cyan","cyan","cyan","cyan","cyan","cyan","cyan","cyan","cyan","cyan","cyan","cyan","cyan")
+
+gap.barplot(freqplain2$value,gap=c(500,520),ytics=c(0,50,100,200,250,300,400,500,                                                                 900,1000,1100,1200,1300,1400,1500),
+            ylab="Frequency counts of non-target terms",main="", xlab="", xaxlab=character(30),
+            col=mycols)
+staxlab(1,1:30,freqplain2$term,srt=45)
+#######
+gap.barplot(freqtarget2$value,gap=c(450,500),ytics=c(0,100,200,300,400,450,500,600,700,800,900,1000,                                                                 900,1000,1100,1200,1300,1400,1500),
+            ylab="Frequency counts of non-target terms",main="", xlab="", xaxlab=character(30),
+            col=mycols)
+staxlab(1,1:30,freqplain2$term,srt=45)
+

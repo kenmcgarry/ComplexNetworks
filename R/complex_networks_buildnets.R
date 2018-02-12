@@ -39,7 +39,7 @@ layout <- layout_nicely(dtn)
 library(kernlab)
 
 clu <- clusters(ppi_net)
-ppi_net.gc <- induced.subgraph(dtn,clu$membership == which.max(clu$csize))
+ppi_net.gc <- induced.subgraph(ppi_net,clu$membership == which.max(clu$csize))
 L <- as.matrix(graph.laplacian(ppi_net.gc))
 egl <- eigen(L) 
 nv <- vcount(ppi_net.gc)
@@ -64,14 +64,5 @@ Kernal1 <- egl$vectors %*% diag(fevals) %*% t(egl$vectors)
 Kernal1 <- as.kernelMatrix(Kernal1)
 
 
-
-
-#V(dtn)[V(graph)$type == 1]$shape <- "square"
-#V(dtn)[V(graph)$type == 0]$shape <- "circle"
-#plot.igraph(dtn,layout=layout.fruchterman.reingold)
-#wc <- cluster_fast_greedy(dtn)#cluster_louvain(dtn)
-#modularity(wc)
-#mods <- membership(wc)
-#plot(wc, dtn)
 
 

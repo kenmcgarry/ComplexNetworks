@@ -61,7 +61,8 @@ colnames(mcrap) <- rownames(mmt)
 rownames(mcrap) <- colnames(mmt)
 
 positives <- mcrap[mcrap$targets == 1,]  # get all targets (1,443)
-negatives <- mcrap[mcrap$targets == 0,]  # get all targets (11,554)
+negatives <- mcrap[mcrap$targets == 0,]  # get all nontargets (11,554)
+allnegatives <- data.frame(negatives)
 negatives <- sample_n(negatives, nrow(positives)) # only use 1,443 of them to match positives
 balanced_dat <- rbind(positives,negatives)
 
@@ -69,15 +70,12 @@ balanced_dat <- rbind(positives,negatives)
 ntrain <- round(nrow(balanced_dat)*0.8) # number of training examples
 tindex <- sample(nrow(balanced_dat),ntrain) # indices of training samples
 xtrain <- data.frame(balanced_dat[tindex,])
-xtest <- data.frame(balanced_dat[-tindex,])
+xtest <-  data.frame(balanced_dat[-tindex,])
 
 ytrain <- xtrain[,150]  # class labels for training data
 ytest <- xtest[,150]   # class labels for test data
 ytest <- as.factor(ytest); #rownames(ytest) <- NULL; colnames(ytest) <- NULL
 
-xxtest <- data.table::transpose(xtest)
-colnames(xxtest) <- rownames(xtest)
-rownames(xxtest) <- colnames(xtest)
 
 #############################################################
 
@@ -171,6 +169,7 @@ cutoff = slot(perf, "x.values")[[1]][ind]
 print(c(accuracy= acc, cutoff = cutoff))
 
 # Examine freq counts of GO terms between targets and non-target proteins on top 15 terms
+# truncate name to 10 letters
 freqtarget <- filter(balanced_dat, targets ==1)
 freqplain <- filter(balanced_dat, targets ==0)
 importantGO <- goterms$GOterm; importantGO <- gsub("\\.", ":", importantGO); 
@@ -247,4 +246,31 @@ gap.barplot(freqtarget2$value,gap=c(450,500),ytics=c(0,100,200,300,400,450,500,6
             ylab="Frequency counts of non-target terms",main="", xlab="", xaxlab=character(30),
             col=mycols)
 staxlab(1,1:30,freqplain2$term,srt=45)
+
+###############  select proteins that are nontargets but not in train or test set
+# use trained RandomForest on these candidates for potential targets
+
+allnontargets <- mcrap[mcrap$targets == 0,]
+unknown <- negatives[!rownames(allnontargets) %in% rownames(negatives),]
+unknown <- data.frame(unknown)
+
+uindex <- sample(nrow(unknown),100) # indices of training samples
+candidates <- unknown[uindex,]
+
+targettype <- predict(rf_fit,candidates)
+candidates <- data.frame(protein=rownames(unknown),target=targettype)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

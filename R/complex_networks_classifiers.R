@@ -254,10 +254,11 @@ allnontargets <- mcrap[mcrap$targets == 0,]
 unknown <- negatives[!rownames(allnontargets) %in% rownames(negatives),]
 unknown <- data.frame(unknown)
 
-uindex <- sample(nrow(unknown),100) # indices of training samples
-candidates <- unknown[uindex,]
-
-targettype <- predict(rf_fit,candidates)
+uindex <- base::sample(nrow(unknown),10) # indices of training samples
+candidates <- unknown[sample(1:nrow(unknown), 100,replace=FALSE),] 
+candidates <- unknown[1:2000,]
+candidates <- data.frame(candidates)
+targettype <- predict(rf_fit,unknown)
 candidates <- data.frame(protein=rownames(unknown),target=targettype)
 
 

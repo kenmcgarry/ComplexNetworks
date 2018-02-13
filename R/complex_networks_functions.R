@@ -226,25 +226,25 @@ example_from_kolaczyk <- function(){
 # returns a list: net and nodes
 get_gstatistics <- function(gt) {
   net <- data.frame( 
-    modu=modularity(gt, membership(cluster_walktrap(gt))),
-    avepath=average.path.length(gt),
-    nedges=ecount(gt),
-    nverts=vcount(gt),
-    transit=transitivity(gt),
-    diam=diameter(gt,weights=NA),
-    connect=is.connected(gt))
+    modu=igraph::modularity(gt, membership(cluster_walktrap(gt))),
+    avepath=igraph::average.path.length(gt),
+    nedges=igraph::ecount(gt),
+    nverts=igraph::vcount(gt),
+    transit=igraph::transitivity(gt),
+    diam=igraph::diameter(gt,weights=NA),
+    connect=igraph::is.connected(gt))
     
   nodes <- data.frame(   
-    closeness=estimate_closeness(gt,mode="all",cutoff=3),
-    degree=(degree(gt)),
-    betweenness=estimate_betweenness(gt,directed=FALSE,cutoff=3),
-    hubness=hub_score(gt)$vector,
+    closeness=igraph::estimate_closeness(gt,mode="all",cutoff=3),
+    degree=(igraph::degree(gt)),
+    betweenness=igraph::estimate_betweenness(gt,directed=FALSE,cutoff=3),
+    hubness=igraph::hub_score(gt)$vector,
     central=vector(mode="integer", length=net$nverts),
     comm=vector(mode="integer", length=net$nverts))
     
-  tmp <- cluster_walktrap(gt)
+  tmp <- igraph::cluster_walktrap(gt)
   nodes$comm <- as.vector(membership(tmp))
-  alpha <- alpha_centrality(ppi_net,alpha=0.1)  
+  alpha <- igraph::alpha_centrality(ppi_net,alpha=0.1)  
   nodes$central <- as.vector(alpha)
     
   cat("\nOverall network statistics:")
@@ -301,7 +301,7 @@ find_hubs <- function(gstats){
   genenames <- as.character(rownames(gstats))
   hublist <- cbind(gstats,genenames)
   cutoff <- quantile(gstats$degree, probs = c(0.70, 0.75, 0.8, 0.85, 0.9, 0.99), na.rm = TRUE) 
-  hublist <- filter(hublist,degree > cutoff[2])
+  hublist <- filter(hublist,degree > cutoff[1])
   hublist <- data.frame(lapply(hublist, as.character), stringsAsFactors=FALSE)
   
   return(hublist)
@@ -393,7 +393,7 @@ annotate_with_go <- function(ppi_net){
   #terms_by_protein <- split(dm$ID,dm$DiseaseModule)  # do split by disease module
   #terms_by_protein <- unname(terms_by_disease_module)   # Remove names for the moment
   #sim_matrix <- get_sim_grid(ontology=go,information_content=GO_IC,term_sets=terms_by_protein)
-  #dist_mat <- max(sim_matrix) - sim_matrix  # need a distance matrix, not a similarity matrix
+  #dist_mat <- max(sim_matrix) - sim_matrix  # need a distance matrix, not a similagrity matrix
  
   return(tempgo)
 }

@@ -15,7 +15,7 @@ explore_subgraph <- induced.subgraph(graph=gppi,vids=unlist(neighborhood(graph=g
 length(V(explore_subgraph))
 plot(explore_subgraph)
 
-coreness = graph.coreness(as.undirected(explore_subgraph))
+coreness <- graph.coreness(as.undirected(explore_subgraph))
 head(sort(coreness, decreasing=TRUE))
 colbar <- rainbow(max(coreness))
 

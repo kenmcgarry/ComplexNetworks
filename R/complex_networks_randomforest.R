@@ -48,6 +48,26 @@ prob <- targettype$prob
 tablestuff <- cbind(tablestuff,prob)
 
 # ADD k-coreness to dataframe:
+coreness <- graph.coreness(as.undirected(ppi_net))
+Genes <- names(coreness)
+Core <- as.vector(coreness)
+coreness <- data.frame(coreness=Core, Gene=Genes, stringsAsFactors = FALSE)
+
+core <- vector(mode="integer", length=rlen)    
+for (i in 1:rlen){
+  tempcore <- coreness[grep(tablestuff$Gene[i],coreness$Gene),]
+  cat("\nCoreness..",tempcore$coreness)
+  if(length(tempcore$coreness)==0){
+    core[i] <- 0}else{
+    core[i] <- tempcore$coreness}
+}
+
+tablestuff <- cbind(tablestuff,core)
+
+# Combine prob + core into overall score for candidate protein ranking
+
+# ADD evidence to dataframe: space for papers in literature supporting potential
+
 
 
 

@@ -4,9 +4,9 @@
 # therapeutic interventions?
 # commenced 4/1/18
 
-memory.limit(2210241024*1024) # use more RAM memory (22 GBs)
+memory.limit(2010241024*1024) # use more RAM memory (20 GBs)
 setwd("C:/R-files/complexnetworks")    # point to where my code lives
-load("complexnets_13thFebruary2018.RData")
+load("complexnets_15thFebruary2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
 
 # only run these files if you intend building up the data from scratch

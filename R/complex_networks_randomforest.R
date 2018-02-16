@@ -70,28 +70,9 @@ rownames(tablestuff) <- NULL
 # ADD evidence to dataframe: space for papers in literature supporting potential
 
 
+tablestuff <- tablestuff[order(core,decreasing = TRUE),]
 xtable(tablestuff)
-
-
-# A bit more on variable importance - must stick this code in appropriate R file!!!
-# https://www.r-bloggers.com/variable-importance-plot-and-variable-selection/
-# VI_F <- importance(rf.model)
-library(clusterGeneration)
-library(mnormt)
-library(corrplot)
-
-VIP <- rf.model$importance ; VIP <- data.frame(VIP) ;VIP <- VIP[order(VIP[4],decreasing = TRUE),]
-names <-rownames(VIP)
-names <- names[1:15]
-par(mfrow=c(2, 3), xpd=NA)
-for (name in names)
-  partialPlot(rf.model, xtrain[,1:149], eval(name), main=name, xlab=name,which.class=1)
-
-
-#plot(boruta_output, cex.axis=.7, las=2, xlab="", main="") 
-# plot regression model on probabilities
-
-
+print(xtable(tablestuff),include.rownames = FALSE)
 
 
 

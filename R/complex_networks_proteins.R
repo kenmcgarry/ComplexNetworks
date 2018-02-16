@@ -20,14 +20,26 @@ coreness <- graph.coreness(as.undirected(explore_subgraph))
 head(sort(coreness, decreasing=TRUE))
 colbar <- rainbow(max(coreness))
 # get subgraphs based on top ranking coreness measure, # create layout
-ll <- corenessLayout(explore_subgraph)
-ll <- tkplot(explore_subgraph)
+#ll <- corenessLayout(explore_subgraph)
+ll <- tkplot(explore_subgraph)  # use tkplot to drag proteins
 
-l <- tkplot.getcoords(ll)
+l <- tkplot.getcoords(ll) # come back and use this command to save placement
 plot(explore_subgraph, layout=l, vertex.size=15, 
      vertex.color=colbar[coreness], vertex.frame.color=colbar[coreness], main="")
 
 
-# use i=18 for good diagram "PPIG"
+# use i=18 for a good diagram i.e. the "PPIG" protein
+
+# Get protein interaction partners for each k-core, see what drugs target these k-cores
+explore_subgraph <- induced.subgraph(graph=ppi_net,vids=unlist(neighborhood(graph=ppi_net,order=1,nodes=k_cores[18])))
+length(V(explore_subgraph)) 
+partners <- V(explore_subgraph)$name
+
+for (i in 1:length(partners)){
+  shite <- filter(drug_targets,Gene == partners[i])
+  if(nrow(shite)>0)
+    cat("\nFound..",nrow(shite),"  drugs.")
+}
+
 
 

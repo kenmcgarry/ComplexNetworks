@@ -12,8 +12,8 @@ p_transporter <- filter(drug_targets,TargetClass == "Transporter")
 
 k_cores <- c("SLC38A6","SLC10A3","SLC16A14","UGDH","STEAP1","FZD4","SLC16A13","GRID1","GOT1L1","MBTPS2",
              "EPHA10", "AKAP8",  "GPR6",   "ADAMTS2", "CELA3A", "MAT1A","FXYD6","PPIG","FZD5","CRYZL1",
-              "ACP5","PTPRK","SLC4A2","FPR2","CD47")
-explore_subgraph <- induced.subgraph(graph=ppi_net,vids=unlist(neighborhood(graph=ppi_net,order=1,nodes=k_cores[18])))
+              "ACP5","PTPRK","SLC4A2","FPR2","CD47","BRCA2","SELE","KIR3DS1","PSMA3")
+explore_subgraph <- induced.subgraph(graph=ppi_net,vids=unlist(neighborhood(graph=ppi_net,order=1,nodes=k_cores[29])))
 length(V(explore_subgraph)) 
 
 coreness <- graph.coreness(as.undirected(explore_subgraph))
@@ -35,11 +35,21 @@ explore_subgraph <- induced.subgraph(graph=ppi_net,vids=unlist(neighborhood(grap
 length(V(explore_subgraph)) 
 partners <- V(explore_subgraph)$name
 
+drugcore <- data.frame(DrugName="",TargetClass="",Gene="")
 for (i in 1:length(partners)){
-  shite <- filter(drug_targets,Gene == partners[i])
-  if(nrow(shite)>0)
-    cat("\nFound..",nrow(shite),"  drugs.")
+  tempcore <- filter(drug_targets,Gene == partners[i])
+  if(nrow(tempcore)>0){
+    drugcore <- rbind(drugcore,tempcore)
+    print(tempcore)
+  }
 }
+drugcore <- drugcore[-1,]    # 1st entry is rubbish, so remove it
+
+
+
+
+
+
 
 
 

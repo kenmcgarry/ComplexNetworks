@@ -44,14 +44,14 @@ plot(roc4.perf)
 pred <- prediction(as.numeric(targettype),targets)
 table(targettype,targets)
 roc1.perf <- performance(pred, "tpr", "fpr")
-plot(roc1.perf)
+#plot(roc1.perf)
 
 # accuracy on test data
 targettype2 <- predict(rf_fit,t(mtest))
 pred2 <- prediction(as.numeric(targettype2),testtargets)
 table(targettype2,targets)
 roc2.perf <- performance(pred2, "tpr", "fpr")
-plot(roc2.perf)
+#plot(roc2.perf)
 
 #===============
 # poor accuracy might be solved by using fewer non-target exemplars
@@ -80,13 +80,13 @@ ytest <- as.factor(ytest); #rownames(ytest) <- NULL; colnames(ytest) <- NULL
 #############################################################
 
 # Ok, so retain Random Forest
-rf_fit <- train(as.factor(targets) ~., data=xtrain, method = "ranger")# 
+rf_fit <- train(as.factor(ytrain) ~., data=xtrain, method = "ranger")# 
 vimport <- rf_fit[[11]]
 vimport <- vimport$variable.importance
 vimport <- data.frame(GOterm=names(vimport),importance=unname(vimport),stringsAsFactors = FALSE)
 vimport <- vimport[order(vimport$importance,decreasing=TRUE),]
 goterms <- head(vimport,15)
-
+  
 targettype <- predict(rf_fit,xtrain)
 targettype <- factor2int((targettype))
 pred       <- prediction(targettype,xtrain$targets)
@@ -112,7 +112,7 @@ df2 <- data.frame(x,y)
 # Now do ROC graph
 ggplot(df1,aes(x,y))+
   geom_line(aes(color="Train data ROC"),size=2)+
-  geom_line(data=df2,aes(color="Test data ROC"),size=2)+
+  geom_line(data=df2,aes(color="Test data ROC"),size=1.5)+
   labs(x="False Positive Rate",y="True Positive Rate") +
   labs(color="Legend") +
   theme(legend.position = c(0.8, 0.2))

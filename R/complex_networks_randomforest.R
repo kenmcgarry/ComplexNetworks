@@ -2,7 +2,13 @@
 
 library(randomForest)
 
-rf.model <- randomForest(as.factor(ytrain) ~., data=xtrain[,1:149],importance=TRUE,proximity = TRUE,keep.forest=TRUE)
+rf.model <- randomForest(as.factor(ytrain) ~., data=xtrain[,1:149],
+                         importance=TRUE,proximity = TRUE,keep.forest=TRUE,
+                         ntree=1000)
+
+
+
+
 print(rf.model)
 round(importance(rf.model), 2)
 varImpPlot(rf.model,main="",type=2,color="black",pch=16) 
@@ -16,7 +22,7 @@ targettype <- data.frame(protein=proteins, prob=targettype$X1)
 targettype <- filter(targettype, prob > 0.5)  # greater than 0.5 will be classed as target
 
 targettype <- targettype[order(targettype$prob,decreasing = TRUE),] 
-head(targettype,10)
+#head(targettype,10)
 
 
 # ADD protein type to dataframe: protein_class for protein types
@@ -71,7 +77,7 @@ rownames(tablestuff) <- NULL
 
 
 tablestuff <- tablestuff[order(core,decreasing = TRUE),]
-xtable(tablestuff)
+#xtable(tablestuff)
 print(xtable(tablestuff),include.rownames = FALSE)
 
 

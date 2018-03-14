@@ -6,6 +6,10 @@ setwd("C:/R-files/complexnetworks")    # point to where my code lives
 load("ComplexNets9thMarch2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
 
+# POINT 4 - problem of under-sampling in the "TESTING SET", 
+# https://stats.stackexchange.com/questions/97926/suggestions-for-cost-sensitive-learning-in-a-highly-imbalanced-setting
+
+
 
 # POINT 8 - retrain RandomForest using different numbers of trees
 # various numbers of trees were used, 1500, 1000, 600, 500, 100, 50, 10, 5 and 1
@@ -136,7 +140,7 @@ tablestuff <- cbind(tablestuff,core)
 rownames(tablestuff) <- NULL
 tablestuff %>% mutate_if(is.factor, as.character) -> tablestuff  # convert nasty factors to strings
 tablestuff <- arrange(tablestuff,desc(core))
-
+xtable(tablestuff)
 
 # POINT 6 - is k-coreness or GO-Slim the main factor in target prediction??
 # so we have 2,500 unknown proteins, 
@@ -199,7 +203,7 @@ are_targets %>% summarise(ave=median(core))
 not_targets %>% summarise(ave=median(core))
 are_targets %>% summarise(vari=IQR(core))
 not_targets %>% summarise(vari=IQR(core))
-
+# proves more or less that k-coreness is not discriminating enough to divide targets and nontargets
 
 
 

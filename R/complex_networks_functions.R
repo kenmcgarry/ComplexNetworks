@@ -379,17 +379,15 @@ go_analysis <- function(yourgenes,ontotype){
 
 
 # annotate_go() will receive a list of proteins and annotate with GO terms it will return
-# a matrix of terms and proteins. Uses the GO data by Daniel Greene
+# a matrix of terms and proteins. Uses the GO data by Daniel Greene.
 annotate_with_go <- function(ppi_net){
   category <- c("MF","BP","CC")
-  #enrich <- c("GO:0017091", "AU-rich element binding","1/1", "23/16982", "0.001354375","RU12","FU")
   nproteins <- length(V(ppi_net)$name)
   allproteins <- V(ppi_net)$name
   
   tempgo <- gene_GO_terms[V(ppi_net)$name]  # Annotate!!
   tempgo <- tempgo[!sapply(tempgo, is.null)]  # Not all proteins have GO annotations so sadly remove them.
   go_proteins <- names(tempgo) # Unfortunately, we are left with only 13,417 proteins.
-  
   # sort GO terms by the three categories, breakdown is useful for summary statistics
   cc <- go$id[go$name == "cellular_component"]
   bp <- go$id[go$name == "biological_process"]
@@ -397,12 +395,11 @@ annotate_with_go <- function(ppi_net){
   temp_cc <- lapply(tempgo, function(x) intersection_with_descendants(go, roots=cc, x))
   temp_bp <- lapply(tempgo, function(x) intersection_with_descendants(go, roots=bp, x))
   temp_mf <- lapply(tempgo, function(x) intersection_with_descendants(go, roots=mf, x))
-  
   #terms_by_protein <- split(dm$ID,dm$DiseaseModule)  # do split by disease module
   #terms_by_protein <- unname(terms_by_disease_module)   # Remove names for the moment
   #sim_matrix <- get_sim_grid(ontology=go,information_content=GO_IC,term_sets=terms_by_protein)
   #dist_mat <- max(sim_matrix) - sim_matrix  # need a distance matrix, not a similagrity matrix
- 
+
   return(tempgo)
 }
 

@@ -227,9 +227,8 @@ rownames(mma) <- plist          # each rowname is a GO term
 
 # Load the huge mma matrix data, it takes 2.5 hours to calculate from raw data! 
 load("mma.RData")
-# Now add the target status as the training label
 
-
+#################################################################################################
 # This is edited out because it takes ages to compute
 # Populate matrix with 1's where GO term(s) are present for that protein: TAKES AT LEAST 2.5 HOURS TO COMPUTE!!
 #for(i in 1:ncol(mma)){    # for each protein (column) annotate matrix with GO terms allocated to it. 
@@ -237,9 +236,15 @@ load("mma.RData")
 #  rowkeep <- which(rownames(mma) %in% ptemp) # recall GO terms are rownames,
 #  mma[rowkeep,i] <- 1
 #}
-
-
-
-
+#
+# Now add the target status to "mma" as the training label
+#target <- matrix(0, ncol(mma), 1)
+#colkeep <- which(colnames(mma) %in% drug_targets$Gene)
+#target[colkeep] <- 1
+#mmatemp <- rbind(mma,t(target))
+#mma <- mmatemp
+#rownames(mma)[nrow(mma)]<-"Target"
+#save(mma,file="mma.RData")
+###################################################################################################
 
 

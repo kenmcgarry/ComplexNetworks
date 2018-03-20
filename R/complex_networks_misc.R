@@ -10,11 +10,15 @@
 # also graph coreness https://jcasasr.wordpress.com/2015/02/03/plotting-the-coreness-of-a-network-with-r-and-igraph/
 # get subgraphs based on coreness measure
 
-subgraph_ppi <- make_ego_graph(ppi_net, order=1, c("RPSA", "PNMA1", "MZT2B","SDC2","TUBGCP4"))
+subgraph_ppi <- make_ego_graph(ppi_net, order=1, c("RPSA", "PNMA1", "MZT2B","BRCA2","TUBGCP4"))
+subgraph_ppi <- make_ego_graph(ppi_net, order=1, c("PSMA3"))
+
 
 sg <- 4;
+coreness <- graph.coreness(as.undirected(ppi_net))
+coreness <- graph.coreness(as.undirected(subgraph_ppi[[sg]]))
+coreness <- graph.coreness(as.undirected(subgraph_ppi))
 
-coreness = graph.coreness(as.undirected(subgraph_ppi[[sg]]))
 head(sort(coreness, decreasing=TRUE))
 colbar <- rainbow(max(coreness));
 ll <- corenessLayout(subgraph_ppi[[sg]]);

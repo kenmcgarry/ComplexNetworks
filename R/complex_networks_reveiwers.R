@@ -206,5 +206,40 @@ not_targets %>% summarise(vari=IQR(core))
 # proves more or less that k-coreness is not discriminating enough to divide targets and nontargets
 
 
+# POINT 3: will using the entire go vocab confer any accuracy benefits compared with go-slim?
+all_go <- annotate_with_go(ppi_net)
+
+# Now get all the GO terms for each protein, 
+plist <- "NULL"
+for (i in 1:length(all_go)){
+  ptemp <- unlist(all_go[[i]])
+  plist <- c(plist,ptemp)
+}
+plist <- plist[-1]  # remove rubbish 1st entry
+plen <- length(unique(plist))  # how unique GO terms do we have?
+plist <- unique(plist) # overwrite
+
+# create the matrix for classification algorithms
+mma <- matrix(0, plen, length(names(all_go)))  # Number of unique GO terms x Number of genes
+colnames(mma) <- names(all_go)  # each colname is a protein
+rownames(mma) <- plist          # each rowname is a GO term
+
+
+# Load the huge mma matrix data, it takes 2.5 hours to calculate from raw data! 
+load("mma.RData")
+# Now add the target status as the training label
+
+
+# This is edited out because it takes ages to compute
+# Populate matrix with 1's where GO term(s) are present for that protein: TAKES AT LEAST 2.5 HOURS TO COMPUTE!!
+#for(i in 1:ncol(mma)){    # for each protein (column) annotate matrix with GO terms allocated to it. 
+#  ptemp <- all_go[[i]]
+#  rowkeep <- which(rownames(mma) %in% ptemp) # recall GO terms are rownames,
+#  mma[rowkeep,i] <- 1
+#}
+
+
+
+
 
 

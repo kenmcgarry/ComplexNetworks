@@ -3,13 +3,8 @@
 
 memory.limit(2010241024*1024) # use more RAM memory (20 GBs)
 setwd("C:/R-files/complexnetworks")    # point to where my code lives
-load("ComplexNets9thMarch2018.RData")
+load("ComplexNets20thMarch2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
-
-# POINT 4 - problem of under-sampling in the "TESTING SET", 
-# https://stats.stackexchange.com/questions/97926/suggestions-for-cost-sensitive-learning-in-a-highly-imbalanced-setting
-
-
 
 # POINT 8 - retrain RandomForest using different numbers of trees
 # various numbers of trees were used, 1500, 1000, 600, 500, 100, 50, 10, 5 and 1
@@ -228,8 +223,64 @@ rownames(mma) <- plist          # each rowname is a GO term
 # Load the huge mma matrix data, it takes 2.5 hours to calculate from raw data! 
 load("mma.RData")
 
+mmt <- data.table::transpose(as.data.frame(mma))
+mmt <- data.frame(mmt)
+colnames(mmt) <- rownames(mma)
+rownames(mmt) <- colnames(mma)
+
+positives <- mmt[mmt$Target == 1,]  # get all targets (1,443)
+negatives <- mmt[mmt$Target == 0,]  # get all nontargets (11,554)
+allnegatives <- data.frame(negatives)
+negatives <- sample_n(negatives, nrow(positives)) # only use 1,443 of them to match positives
+balanced_dat <- rbind(positives,negatives)
+
+## Prepare a training and a test set ##
+ntrain <- round(nrow(balanced_dat)*0.8) # number of training examples
+tindex <- sample(nrow(balanced_dat),ntrain) # indices of training samples
+xtrain <- data.frame(balanced_dat[tindex,])
+xtest <-  data.frame(balanced_dat[-tindex,])
+
+ytrain <- xtrain[,ncol(xtrain)]  # class labels for training data
+ytest <- xtest[,ncol(xtest)]   # class labels for test data
+xtest <- xtest[,1:ncol(xtest)-1]  # miss out class label and update structure
+ytest <- as.factor(ytest); #
+
+# train RF on full GO terms :using 500 trees takes 1.5 hours with 56% test set accuracy,sensitivity=0.16,specificity=0.97
+# train RF on full GO terms :using 1000 trees takes 3.5 hours with 57% test set accuracy,sensitivity=0.16,specificity=0.98
+
+rf_model_go <-randomForest(as.factor(ytrain)~.,data=xtrain[,1:ncol(xtrain)-1],
+                           proximity=TRUE,keep.forest=FALSE,ntree=1000,mtry=12)
+
+pred_rf <- stats::predict(rf_model_go,xtest)
+confusionMatrix(data=pred_rf,reference=ytest,positive="1")
+
+# POINT 4 - problem of under-sampling in the "TESTING SET", 
+# https://stats.stackexchange.com/questions/97926/suggestions-for-cost-sensitive-learning-in-a-highly-imbalanced-setting
+
+
+
+
+
 #################################################################################################
-# This is edited out because it takes ages to compute
+# POINT 3: will using the entire go vocab confer any accuracy benefits compared with go-slim?
+#all_go <- annotate_with_go(ppi_net)
+#
+# Now get all the GO terms for each protein, 
+#plist <- "NULL"
+#for (i in 1:length(all_go)){
+#  ptemp <- unlist(all_go[[i]])
+#  plist <- c(plist,ptemp)
+#}
+#plist <- plist[-1]  # remove rubbish 1st entry
+#plen <- length(unique(plist))  # how unique GO terms do we have?
+#plist <- unique(plist) # overwrite
+#
+# create the matrix for classification algorithms
+#mma <- matrix(0, plen, length(names(all_go)))  # Number of unique GO terms x Number of genes
+#colnames(mma) <- names(all_go)  # each colname is a protein
+#rownames(mma) <- plist          # each rowname is a GO term
+#
+# POINT 3: This is edited out because data matrix takes some time to compute
 # Populate matrix with 1's where GO term(s) are present for that protein: TAKES AT LEAST 2.5 HOURS TO COMPUTE!!
 #for(i in 1:ncol(mma)){    # for each protein (column) annotate matrix with GO terms allocated to it. 
 #  ptemp <- all_go[[i]]
@@ -246,5 +297,3 @@ load("mma.RData")
 #rownames(mma)[nrow(mma)]<-"Target"
 #save(mma,file="mma.RData")
 ###################################################################################################
-
-

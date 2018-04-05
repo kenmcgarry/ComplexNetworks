@@ -188,47 +188,7 @@ count_interactions <- function(protein_list) {
 }
 
 
-# intial code from Kolaczyk and Csardi book, good for intro to GO annoations
-example_from_kolaczyk <- function(){
-  oldw <- getOption("warn")
-  options(warn = -1)
-  set.seed(42)
-  load("ppi_CC.RData")
-  upgrade_graph(ppi.CC)
-  #save(ppi.CC, file = "ppi_CC.RData")
-  
-  summary(ppi.CC)
-  V(ppi.CC)[ICSC == 1]$color <- "yellow"
-  V(ppi.CC)[ICSC == 0]$color <- "lightblue"
-  
-  plot(ppi.CC, vertex.size=5, vertex.label=NA,
-       main="Network of interacting proteins responsible for cell communications: \n yellow=involved in ICSC, blue=not involved")
-  
-  clu<- clusters(ppi.CC)
-  ppi.CC.gc <- induced.subgraph(ppi.CC,clu$membership==which.max(clu$csize))
-  nn.ave <- sapply(V(ppi.CC.gc), function(x) mean(V(ppi.CC.gc)[nei(x)]$ICSC))
-  
-  par(mfrow=c(2,1))
-  hist(nn.ave[V(ppi.CC.gc)$ICSC ==1], col="yellow", ylim=c(0,30),xlab="Proportion neighbours with ICSC",
-       main="Egos w/ ICSC")
-  hist(nn.ave[V(ppi.CC.gc)$ICSC ==0], col="lightblue", ylim=c(0,30),xlab="Proportion neighbours without ICSC",
-       main="Egos w/out ICSC")
-  
-  nn.pred <- as.numeric(nn.ave > 0.5)
-  mean(as.numeric(nn.pred) != V(ppi.CC.gc)$ICSC)
-  
-  # now do the GO stuff, as per page 140 of Kolaczyk
-  x <- as.list(org.Sc.sgdGO2ALLORFS)
-  current.icst <- x[names(x) == "GO:0035556"]
-  ev.code <- names(current.icst[[1]])
-  icst.ida <- current.icst[[1]][ev.code == "IDA"]
-  orig.icsc <- V(ppi.CC.gc)[ICSC == 1]$name
-  candidates <- intersect(icst.ida, V(ppi.CC.gc)$name)
-  new.icsc <- setdiff(candidates, orig.icsc)
-  new.icsc
-  options(warn = oldw)
-  
-}
+
 
 # Calculate some statistics about the disease gene network
 # returns a list: net and nodes
@@ -308,7 +268,7 @@ corenessLayout <- function(g) {
 find_hubs <- function(gstats){
   genenames <- as.character(rownames(gstats))
   hublist <- cbind(gstats,genenames)
-  cutoff <- quantile(gstats$degree, probs = c(0.70, 0.75, 0.8, 0.85, 0.9, 0.99), na.rm = TRUE) 
+  cutoff <- quantile(gstats$degree, probs = c(0.60,0.70, 0.75, 0.8, 0.85, 0.9, 0.99), na.rm = TRUE) 
   hublist <- filter(hublist,degree > cutoff[1])
   hublist <- data.frame(lapply(hublist, as.character), stringsAsFactors=FALSE)
   
@@ -399,7 +359,6 @@ annotate_with_go <- function(ppi_net){
   #terms_by_protein <- unname(terms_by_disease_module)   # Remove names for the moment
   #sim_matrix <- get_sim_grid(ontology=go,information_content=GO_IC,term_sets=terms_by_protein)
   #dist_mat <- max(sim_matrix) - sim_matrix  # need a distance matrix, not a similagrity matrix
-
   return(tempgo)
 }
 

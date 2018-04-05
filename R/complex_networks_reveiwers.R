@@ -6,6 +6,71 @@ setwd("C:/R-files/complexnetworks")    # point to where my code lives
 load("ComplexNets20thMarch2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
 
+# POINT 1: DATA IMBALANCE PROBLEM, WE HAVE 1,449 TARGETS AND 11,567 NON-TARGETS
+# https://stats.stackexchange.com/questions/157714/r-package-for-weighted-random-forest-classwt-option/158030#158030
+# https://stats.stackexchange.com/questions/163251/creating-a-test-set-with-imbalanced-data/163567#163567
+setwd("C:/R-files/NeuralNet")  
+load("NCA-27thMarch2018.RData")
+## Convert matrix to dataframe and balance out the data by undersampling
+mnew <- data.table::transpose(as.data.frame(mt))
+mnew <- data.frame(mnew)
+colnames(mnew) <- rownames(mt)
+rownames(mnew) <- colnames(mt)
+positives <- mnew[mnew$targets == 1,]  # get all targets (1,449)
+negatives <- mnew[mnew$targets == 0,]  # get all nontargets (11,567)
+
+## Prepare a training and a test set / as per reviewer guidelines
+nmin <- round(nrow(positives)/2)
+mindex <- sample(nrow(positives),nmin) # indices of minority training samples
+minTRAIN <- data.frame(positives[mindex,])  # populate the minority train dataframe
+minTEST <- data.frame(positives[-mindex,])
+nmaj <- round(nrow(negatives)/2)
+majindex <- sample(nrow(negatives),nmaj) # indices of majority training samples
+majTRAIN <- data.frame(negatives[majindex,]) # populate the minority train dataframe
+majTEST <-  data.frame(negatives[-majindex,])
+
+allTRAIN <- rbind(minTRAIN[,1:149],majTRAIN[,1:149])
+allTEST  <- rbind(minTEST[,1:149],majTEST[,1:149])
+yTEST <- as.factor(c(minTEST[,150],majTEST[,150]))
+yTRAIN <- as.factor(c(minTRAIN[,150],majTRAIN[,150]))
+
+## train default RF and then with 10x 30x and 100x upsampling by stratification
+rf1 <- randomForest(yTRAIN~.,allTRAIN, mtry=50, ntree=500)
+rf2 <- randomForest(yTRAIN~.,allTRAIN, mtry=50, ntree=5000,sampsize=c(75,120) ,strata=yTRAIN)
+rf3 <- randomForest(yTRAIN~.,allTRAIN, mtry=50, ntree=5000,sampsize=c(50,50),strata=yTRAIN)
+rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=50, ntree=5000,sampsize=c(50,100),strata=yTRAIN)
+
+## plot ROC for training data votes
+par(mfrow=c(1,1))
+plot(roc(rf1$votes[,2],factor(1 * (rf1$y==1))),main="ROC curves for four models predicting class 1")
+plot(roc(rf2$votes[,2],factor(1 * (rf2$y==1))),col=2,add=TRUE)
+plot(roc(rf3$votes[,2],factor(1 * (rf3$y==1))),col=3,add=TRUE)
+plot(roc(rf4$votes[,2],factor(1 * (rf4$y==1))),col=4,add=TRUE)
+
+## Ok, so now test out RF on test data
+predicted_rf_test <- predict(rf2,allTEST)
+confusionMatrix(data=predicted_rf_test,reference=yTEST,positive="1")
+
+predicted_rf_test <- predict(rf2,allTEST,type="prob")  # ROCR functions need type="prob"
+pred_rf_test <- ROCR::prediction((predicted_rf_test[,2]),yTEST)
+rf.roc.test <- ROCR::performance(pred_rf_test, "tpr", "fpr")
+rf.pr.test <- ROCR::performance(pred_rf_test, "prec", "rec")
+
+plot(rf.pr.test)
+plot(rf.roc.test)
+
+#######################################################################################
+  
+## Prepare a training and a test set 
+ntrain <- round(nrow(bdata)*0.8) # number of training examples
+tindex <- sample(nrow(bdata),ntrain) # indices of training samples
+xtrain <- data.frame(bdata[tindex,])
+xtest <-  data.frame(bdata[-tindex,])
+ytrain <- xtrain[,150]  # class labels for training data (column 150 is class label)
+ytest <- xtest[,150]   # class labels for test data
+ytest <- as.factor(ytest)
+ 
+
 # POINT 8 - retrain RandomForest using different numbers of trees
 # various numbers of trees were used, 1500, 1000, 600, 500, 100, 50, 10, 5 and 1
 rf_model <-randomForest(as.factor(ytrain) ~.,data=xtrain[,1:149],proximity=TRUE,keep.forest=TRUE,
@@ -254,9 +319,17 @@ rf_model_go <-randomForest(as.factor(ytrain)~.,data=xtrain[,1:ncol(xtrain)-1],
 pred_rf <- stats::predict(rf_model_go,xtest)
 confusionMatrix(data=pred_rf,reference=ytest,positive="1")
 
+
 # POINT 4 - problem of under-sampling in the "TESTING SET", 
 # https://stats.stackexchange.com/questions/97926/suggestions-for-cost-sensitive-learning-in-a-highly-imbalanced-setting
+# https://www.r-bloggers.com/handling-class-imbalance-with-r-and-caret-an-introduction/
+# https://topepo.github.io/caret/measuring-performance.html
+# https://svds.com/learning-imbalanced-classes/
 
+library(DMwR)   # DMwr to balance the unbalanced class
+
+balanced.data <- SMOTE(Class ~., dresstrain, perc.over = 4800, k = 5, perc.under = 1000)
+as.data.frame(table(balanced.data$Class))
 
 
 

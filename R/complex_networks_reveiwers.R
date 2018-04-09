@@ -1,16 +1,18 @@
 # complex_networks_reviewers.R
 # further experiments and analysis conducted as a result of reviewer feedback.
 
-memory.limit(2010241024*1024) # use more RAM memory (20 GBs)
+memory.limit(2210241024*1024) # use more RAM memory (22 GBs)
 setwd("C:/R-files/complexnetworks")    # point to where my code lives
-load("ComplexNets20thMarch2018.RData")
+load("ComplexNets4thApril2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
+library(AUC)
+
 
 # POINT 1: DATA IMBALANCE PROBLEM, WE HAVE 1,449 TARGETS AND 11,567 NON-TARGETS
 # https://stats.stackexchange.com/questions/157714/r-package-for-weighted-random-forest-classwt-option/158030#158030
 # https://stats.stackexchange.com/questions/163251/creating-a-test-set-with-imbalanced-data/163567#163567
-setwd("C:/R-files/NeuralNet")  
-load("NCA-27thMarch2018.RData")
+#setwd("C:/R-files/NeuralNet")  
+#load("NCA-27thMarch2018.RData")
 ## Convert matrix to dataframe and balance out the data by undersampling
 mnew <- data.table::transpose(as.data.frame(mt))
 mnew <- data.frame(mnew)
@@ -29,16 +31,20 @@ majindex <- sample(nrow(negatives),nmaj) # indices of majority training samples
 majTRAIN <- data.frame(negatives[majindex,]) # populate the minority train dataframe
 majTEST <-  data.frame(negatives[-majindex,])
 
-allTRAIN <- rbind(minTRAIN[,1:149],majTRAIN[,1:149])
-allTEST  <- rbind(minTEST[,1:149],majTEST[,1:149])
-yTEST <- as.factor(c(minTEST[,150],majTEST[,150]))
-yTRAIN <- as.factor(c(minTRAIN[,150],majTRAIN[,150]))
+exindex <- sample(nrow(majTEST),1000) # indices of min
+majEXPLORE <- data.frame(majTEST[exindex,]) # EXPLORE data willbe feed into RF
+majTEST <- data.frame(majTEST[-exindex,])
 
-## train default RF and then with 10x 30x and 100x upsampling by stratification
-rf1 <- randomForest(yTRAIN~.,allTRAIN, mtry=50, ntree=500)
-rf2 <- randomForest(yTRAIN~.,allTRAIN, mtry=50, ntree=5000,sampsize=c(75,120) ,strata=yTRAIN)
-rf3 <- randomForest(yTRAIN~.,allTRAIN, mtry=50, ntree=5000,sampsize=c(50,50),strata=yTRAIN)
-rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=50, ntree=5000,sampsize=c(50,100),strata=yTRAIN)
+allTRAIN <- rbind(minTRAIN[,1:149],majTRAIN[,1:149])  # data for training
+allTEST  <- rbind(minTEST[,1:149],majTEST[,1:149])   # data for testing
+yTEST <- as.factor(c(minTEST[,150],majTEST[,150]))  # class labels testing
+yTRAIN <- as.factor(c(minTRAIN[,150],majTRAIN[,150])) # class labels training
+
+## train default RF and then with 10x 50x and 100x upsampling by stratification
+rf1 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=10)
+rf2 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=1,sampsize=c(100,200),strata=yTRAIN)
+rf3 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=1,sampsize=c(100,500),strata=yTRAIN)
+rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=1,sampsize=c(300,700),strata=yTRAIN)
 
 ## plot ROC for training data votes
 par(mfrow=c(1,1))
@@ -47,17 +53,31 @@ plot(roc(rf2$votes[,2],factor(1 * (rf2$y==1))),col=2,add=TRUE)
 plot(roc(rf3$votes[,2],factor(1 * (rf3$y==1))),col=3,add=TRUE)
 plot(roc(rf4$votes[,2],factor(1 * (rf4$y==1))),col=4,add=TRUE)
 
-## Ok, so now test out RF on test data
-predicted_rf_test <- predict(rf2,allTEST)
-confusionMatrix(data=predicted_rf_test,reference=yTEST,positive="1")
+rf_model <- rf1
 
-predicted_rf_test <- predict(rf2,allTEST,type="prob")  # ROCR functions need type="prob"
+predicted_rf_train <- predict(rf_model,newdata=allTRAIN,type = "prob")
+pred_rf_train <- ROCR::prediction((predicted_rf_train[,2]),yTRAIN)
+rf.pr.train <- ROCR::performance(pred_rf_train, "prec", "rec")
+plot(rf.pr.train)
+
+## Ok, so now test out RF on test data
+predicted_rf_test <- predict(rf_model,allTEST) # cant use "prob" as confusionmatrix cant use it(error)
+confusionMatrix(data=predicted_rf_test,reference=yTEST,positive="1") 
+
+predicted_rf_test <- predict(rf_model,allTEST,type="prob")  # ROCR functions need type="prob"
 pred_rf_test <- ROCR::prediction((predicted_rf_test[,2]),yTEST)
 rf.roc.test <- ROCR::performance(pred_rf_test, "tpr", "fpr")
 rf.pr.test <- ROCR::performance(pred_rf_test, "prec", "rec")
 
 plot(rf.pr.test)
 plot(rf.roc.test)
+
+# Now feed in majEXPLORE data, i.e. the 1,000 proteins reserved for detecting targets
+candidates_rf <-  predict(rf_model,majEXPLORE,type="prob")
+gs <- get_gstatistics(ppi_net)
+my_table <-  make_table(candidates_rf,gs[[2]],0.7)
+xtable(my_table)
+
 
 #######################################################################################
   
@@ -147,11 +167,12 @@ candidates_rf <- filter(candidates_rf,target==1)
 
 # get top ranking unseen proteins that may be candidates as protein targets
 targettype <- predict(rf.model, candidates, type="prob")
+
 proteins <- rownames(targettype)
 targettype <- data.frame(targettype)
 target <- as.vector(targettype$X1)
 targettype <- data.frame(protein=proteins, prob=targettype$X1)
-targettype <- filter(targettype, prob > 0.5)  # greater than 0.5 will be classed as target
+targettype <- filter(targettype, prob >= 0.8) # probabilities equal to greater than 0.8 classed as target
 
 # ADD protein type to dataframe: protein_class for protein types
 targettype[] <- lapply(targettype, as.character)

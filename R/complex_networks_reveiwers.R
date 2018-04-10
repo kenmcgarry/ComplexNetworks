@@ -3,12 +3,12 @@
 
 memory.limit(2210241024*1024) # use more RAM memory (22 GBs)
 setwd("C:/R-files/complexnetworks")    # point to where my code lives
-load("ComplexNets4thApril2018.RData")
+load("ComplexNets9thApril2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
 library(AUC)
 
 
-# POINT 1: DATA IMBALANCE PROBLEM, WE HAVE 1,449 TARGETS AND 11,567 NON-TARGETS
+## POINT 1: DATA IMBALANCE PROBLEM, WE HAVE 1,449 TARGETS AND 11,567 NON-TARGETS
 # https://stats.stackexchange.com/questions/157714/r-package-for-weighted-random-forest-classwt-option/158030#158030
 # https://stats.stackexchange.com/questions/163251/creating-a-test-set-with-imbalanced-data/163567#163567
 #setwd("C:/R-files/NeuralNet")  
@@ -26,14 +26,21 @@ nmin <- round(nrow(positives)/2)
 mindex <- sample(nrow(positives),nmin) # indices of minority training samples
 minTRAIN <- data.frame(positives[mindex,])  # populate the minority train dataframe
 minTEST <- data.frame(positives[-mindex,])
+
 nmaj <- round(nrow(negatives)/2)
 majindex <- sample(nrow(negatives),nmaj) # indices of majority training samples
 majTRAIN <- data.frame(negatives[majindex,]) # populate the minority train dataframe
 majTEST <-  data.frame(negatives[-majindex,])
 
-exindex <- sample(nrow(majTEST),1000) # indices of min
-majEXPLORE <- data.frame(majTEST[exindex,]) # EXPLORE data willbe feed into RF
-majTEST <- data.frame(majTEST[-exindex,])
+exindex1 <- sample(nrow(majTRAIN),500) # indices of maj
+exindex2 <- sample(nrow(majTEST),500) # indices of maj
+
+majEXPLORE1 <- data.frame(majTRAIN[exindex1,]) # EXPLORE data will be feed into RF
+majEXPLORE2 <- data.frame(majTEST[exindex2,]) # EXPLORE data will be feed into RF
+majEXPLORE <- rbind(majEXPLORE1[,1:149],majEXPLORE2[,1:149])  #
+
+majTEST <- data.frame(majTEST[-exindex2,])
+majTRAIN <-data.frame(majTRAIN[-exindex1,])
 
 allTRAIN <- rbind(minTRAIN[,1:149],majTRAIN[,1:149])  # data for training
 allTEST  <- rbind(minTEST[,1:149],majTEST[,1:149])   # data for testing
@@ -41,10 +48,10 @@ yTEST <- as.factor(c(minTEST[,150],majTEST[,150]))  # class labels testing
 yTRAIN <- as.factor(c(minTRAIN[,150],majTRAIN[,150])) # class labels training
 
 ## train default RF and then with 10x 50x and 100x upsampling by stratification
-rf1 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=10)
-rf2 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=1,sampsize=c(100,200),strata=yTRAIN)
-rf3 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=1,sampsize=c(100,500),strata=yTRAIN)
-rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=1,sampsize=c(300,700),strata=yTRAIN)
+rf1 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=5)
+rf2 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=5,sampsize=c(100,200),strata=yTRAIN)
+rf3 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=5,sampsize=c(100,500),strata=yTRAIN)
+rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=5,sampsize=c(300,720),strata=yTRAIN)
 
 ## plot ROC for training data votes
 par(mfrow=c(1,1))
@@ -53,7 +60,7 @@ plot(roc(rf2$votes[,2],factor(1 * (rf2$y==1))),col=2,add=TRUE)
 plot(roc(rf3$votes[,2],factor(1 * (rf3$y==1))),col=3,add=TRUE)
 plot(roc(rf4$votes[,2],factor(1 * (rf4$y==1))),col=4,add=TRUE)
 
-rf_model <- rf1
+rf_model <- rf4
 
 predicted_rf_train <- predict(rf_model,newdata=allTRAIN,type = "prob")
 pred_rf_train <- ROCR::prediction((predicted_rf_train[,2]),yTRAIN)
@@ -69,15 +76,44 @@ pred_rf_test <- ROCR::prediction((predicted_rf_test[,2]),yTEST)
 rf.roc.test <- ROCR::performance(pred_rf_test, "tpr", "fpr")
 rf.pr.test <- ROCR::performance(pred_rf_test, "prec", "rec")
 
+rf.auc <- performance(pred_rf_test, measure = "auc")
+cat("\nAUC=",as.character(rf.auc@y.values[1]))
+
 plot(rf.pr.test)
 plot(rf.roc.test)
 
 # Now feed in majEXPLORE data, i.e. the 1,000 proteins reserved for detecting targets
 candidates_rf <-  predict(rf_model,majEXPLORE,type="prob")
 gs <- get_gstatistics(ppi_net)
-my_table <-  make_table(candidates_rf,gs[[2]],0.7)
-xtable(my_table)
+my_table <-  make_table(candidates_rf,gs[[2]],0.5)
+my_table$prob <- as.numeric(my_table$prob)  # convert from strings to numbers
+xtable(my_table,digits=c(0,0,0,2,2,0))
 
+
+## POINT 2: WHAT IS THE TRUE INFLUENCE OF K-CORENESS?
+# build data structure to train Random Forest on coreness
+kcore <- graph.coreness(as.undirected(ppi_net))
+kcore <- as.data.frame(kcore)
+kcore$proteins <- rownames(kcore)
+rownames(coreness) <- c()
+kcore$target <- vertex_attr(ppi_net,"target")
+kcore$target <- as.factor(kcore$target)
+
+rf5 <- randomForest(y=kcore$target, x=as.data.frame(kcore$kcore), 
+                    ntree=10000,nodesize=1,type="classification",
+                    sampsize=c(300,700),strata=kcore$target)
+rf_model <- rf5
+predicted_rf_kcore <- predict(rf_model,newdata=as.data.frame(kcore$kcore),type = "prob")
+pred_rf_kcore <- ROCR::prediction((predicted_rf_kcore[,2]),kcore$target)
+rf.pr.kcore <- ROCR::performance(pred_rf_kcore, "prec", "rec")
+plot(rf.pr.kcore)
+rf.roc.kcore <- ROCR::performance(pred_rf_kcore,"tpr", "fpr")
+plot(rf.roc.kcore)
+
+predicted_rf_kcore <- predict(rf_model,newdata=as.data.frame(kcore$kcore)) # cant use "prob" as confusionmatrix cant use it(error)
+confusionMatrix(data=predicted_rf_kcore,reference=kcore$target,positive="1") 
+
+boxplot(kcore~target,data=kcore, main="K-core Data",xlab="Targetness", ylab="k-coreness") 
 
 #######################################################################################
   

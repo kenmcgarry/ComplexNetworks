@@ -4,6 +4,8 @@ The following files:
 
 `complex_networks_functions.R` contains the workhorse functions and loads in R libraries.
 
+`complex_networks_reviewers.R` The reviwers had suggested several improvements, best to examine this first.
+
 `complex_networks_plots.R` produces plots that appear in the paper.
 
 `complex_networks_tables.R` produces tables that appear in the paper.

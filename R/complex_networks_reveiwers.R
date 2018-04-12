@@ -3,7 +3,7 @@
 
 memory.limit(2210241024*1024) # use more RAM memory (22 GBs)
 setwd("C:/R-files/complexnetworks")    # point to where my code lives
-load("ComplexNets9thApril2018.RData")
+load("ComplexNets10thApril2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
 library(AUC)
 
@@ -47,11 +47,12 @@ allTEST  <- rbind(minTEST[,1:149],majTEST[,1:149])   # data for testing
 yTEST <- as.factor(c(minTEST[,150],majTEST[,150]))  # class labels testing
 yTRAIN <- as.factor(c(minTRAIN[,150],majTRAIN[,150])) # class labels training
 
-## train default RF and then with 10x 50x and 100x upsampling by stratification
-rf1 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=5)
-rf2 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=5,sampsize=c(100,200),strata=yTRAIN)
-rf3 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=5,sampsize=c(100,500),strata=yTRAIN)
-rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=100, ntree=6000,nodesize=5,sampsize=c(300,720),strata=yTRAIN)
+## train default RF and then with 2x 5x and 10x upsampling by stratification
+rf1 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1)
+rf2 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(100,200),strata=yTRAIN)
+rf3 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(100,500),strata=yTRAIN)
+rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(300,724),strata=yTRAIN)
+#rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(724,724),strata=yTRAIN)
 
 ## plot ROC for training data votes
 par(mfrow=c(1,1))
@@ -60,32 +61,55 @@ plot(roc(rf2$votes[,2],factor(1 * (rf2$y==1))),col=2,add=TRUE)
 plot(roc(rf3$votes[,2],factor(1 * (rf3$y==1))),col=3,add=TRUE)
 plot(roc(rf4$votes[,2],factor(1 * (rf4$y==1))),col=4,add=TRUE)
 
-rf_model <- rf4
+for (i in 1:4){
+if(i==1) rf_model <- rf1
+if(i==2) rf_model <- rf2
+if(i==3) rf_model <- rf3
+if(i==4) rf_model <- rf4
 
 predicted_rf_train <- predict(rf_model,newdata=allTRAIN,type = "prob")
 pred_rf_train <- ROCR::prediction((predicted_rf_train[,2]),yTRAIN)
 rf.pr.train <- ROCR::performance(pred_rf_train, "prec", "rec")
-plot(rf.pr.train)
+#plot(rf.pr.train)
 
 ## Ok, so now test out RF on test data
 predicted_rf_test <- predict(rf_model,allTEST) # cant use "prob" as confusionmatrix cant use it(error)
 confusionMatrix(data=predicted_rf_test,reference=yTEST,positive="1") 
-
 predicted_rf_test <- predict(rf_model,allTEST,type="prob")  # ROCR functions need type="prob"
 pred_rf_test <- ROCR::prediction((predicted_rf_test[,2]),yTEST)
 rf.roc.test <- ROCR::performance(pred_rf_test, "tpr", "fpr")
 rf.pr.test <- ROCR::performance(pred_rf_test, "prec", "rec")
 
-rf.auc <- performance(pred_rf_test, measure = "auc")
-cat("\nAUC=",as.character(rf.auc@y.values[1]))
+if(i==1){rf1.roc <- rf.roc.test; rf1.pr <- rf.pr.test}
+if(i==2){rf2.roc <- rf.roc.test; rf2.pr <- rf.pr.test}
+if(i==3){rf3.roc <- rf.roc.test; rf3.pr <- rf.pr.test}
+if(i==4){rf4.roc <- rf.roc.test; rf4.pr <- rf.pr.test}
+}
 
-plot(rf.pr.test)
-plot(rf.roc.test)
+#rf.auc <- performance(pred_rf_test, measure = "auc")
+#cat("\nAUC=",as.character(rf.auc@y.values[1]))
+#plot(rf.pr.test)
+#plot(rf.roc.test)
+
+# plot ROC and PR using the prettier ggplot2 graphs
+attributes(rf1.roc)$roc_name <- "No sampling"
+attributes(rf2.roc)$roc_name <- "100:200"
+attributes(rf3.roc)$roc_name <- "100:500"
+attributes(rf4.roc)$roc_name <- "300:724"
+roc_plot(rf1.roc,rf2.roc,rf3.roc,rf4.roc)
+
+# PR plots of classifiers
+attributes(rf1.pr)$pr_name <- "No sampling"
+attributes(rf2.pr)$pr_name <- "100:200"
+attributes(rf3.pr)$pr_name <- "100:500"
+attributes(rf4.pr)$pr_name <- "300:724"
+pr_plot(rf1.pr,rf2.pr,rf3.pr,rf4.pr)
+
 
 # Now feed in majEXPLORE data, i.e. the 1,000 proteins reserved for detecting targets
 candidates_rf <-  predict(rf_model,majEXPLORE,type="prob")
-gs <- get_gstatistics(ppi_net)
-my_table <-  make_table(candidates_rf,gs[[2]],0.5)
+#gs <- get_gstatistics(ppi_net)
+my_table <-  make_table(candidates_rf,gs[[2]],0.80)   # 0.5 = 178 targets; 0.8=36 targets
 my_table$prob <- as.numeric(my_table$prob)  # convert from strings to numbers
 xtable(my_table,digits=c(0,0,0,2,2,0))
 

@@ -10,10 +10,10 @@ p_transporter <- filter(drug_targets,TargetClass == "Transporter")
 # Alternatively, assess the drugs targeting the k-core neighborhood.
 # subgraphs of k-core proteins
 
-k_cores <- c("PSMA3","CHRNA9","KIR3DS1","SELE","FPR2","FXYD6","PTPRK","COL4A3BP","RPA2","SLC38A6","SLC10A3","SLC16A14","UGDH","STEAP1","FZD4","SLC16A13","GRID1","GOT1L1","MBTPS2",
+k_cores <- c("APLP1","PSME2","PIP4K2A","PBK","FPR2","FXYD6","PTPRK","COL4A3BP","RPA2","SLC38A6","SLC10A3","SLC16A14","UGDH","STEAP1","FZD4","SLC16A13","GRID1","GOT1L1","MBTPS2",
              "EPHA10", "AKAP8",  "GPR6",   "ADAMTS2", "CELA3A", "MAT1A","FXYD6","PPIG","FZD5","CRYZL1",
               "ACP5","PTPRK","SLC4A2","FPR2","CD47","BRCA2","SELE","KIR3DS1","PSMA3")
-explore_subgraph <- induced.subgraph(graph=ppi_net,vids=unlist(neighborhood(graph=ppi_net,order=1,nodes=k_cores[1])))
+explore_subgraph <- induced.subgraph(graph=ppi_net,vids=unlist(neighborhood(graph=ppi_net,order=1,nodes=k_cores[2])))
 length(V(explore_subgraph)) 
 
 coreness <- graph.coreness(as.undirected(explore_subgraph))
@@ -28,10 +28,10 @@ plot(explore_subgraph, layout=l, vertex.size=15,
      vertex.color=colbar[coreness], vertex.frame.color=colbar[coreness], main="")
 
 
-# use i=18 for a good diagram i.e. the "PPIG" protein
+# use i=1 for a good diagram i.e. the "APLP1" protein
 
 # Get protein interaction partners for each k-core, see what drugs target these k-cores
-explore_subgraph <- induced.subgraph(graph=ppi_net,vids=unlist(neighborhood(graph=ppi_net,order=1,nodes=k_cores[1])))
+explore_subgraph <- induced.subgraph(graph=ppi_net,vids=unlist(neighborhood(graph=ppi_net,order=1,nodes=k_cores[2])))
 length(V(explore_subgraph)) 
 partners <- V(explore_subgraph)$name
 

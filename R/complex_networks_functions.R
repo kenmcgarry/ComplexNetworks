@@ -720,5 +720,49 @@ make_table <- function(targettype,gs1,cutoff){
 return(tablestuff)
 }
 
+# plot several ROC curves on one plot
+roc_plot <- function(...){
+  args = list(...)
+  df <- data.frame(x=0,y=0,classifier="DECTREE",stringsAsFactors = FALSE)
+  
+  for (i in 1:length(args)){
+    x <- attributes(args[[i]])$x.values
+    y <- attributes(args[[i]])$y.values
+    classifier <- rep(attributes(args[[i]])$roc_name,length(x))
+    df_temp <- data.frame(x,y,classifier,stringsAsFactors = FALSE)
+    names(df_temp) <- names(df) 
+    df <- rbind(df, df_temp) 
+  }
+  
+  df <- df[-1,]    # 1st entry is rubbish, so remove it
+  df <- na.omit(df)
+  ggplot(data=df, aes(x=x, y=y, group=classifier,colour=classifier)) + geom_line(size=1.0) +
+    labs(x="False Positive Rate",y="True Positive Rate") +
+    labs(color="") +
+    theme(legend.position = "bottom", legend.direction = "horizontal")
+}   
+
+
+# plot several PR curves on one plot
+pr_plot <- function(...){
+  args = list(...)
+  df <- data.frame(x=0,y=0,classifier="DECTREE",stringsAsFactors = FALSE)
+  
+  for (i in 1:length(args)){
+    x <- attributes(args[[i]])$x.values
+    y <- attributes(args[[i]])$y.values
+    classifier <- rep(attributes(args[[i]])$pr_name,length(x))
+    df_temp <- data.frame(x,y,classifier,stringsAsFactors = FALSE)
+    names(df_temp) <- names(df) 
+    df <- rbind(df, df_temp) 
+  }
+  
+  df <- df[-1,]    # 1st entry is rubbish, so remove it
+  df <- na.omit(df)
+  ggplot(data=df, aes(x=x, y=y, group=classifier,colour=classifier)) + geom_line(size=1.0) +
+    labs(x="Recall",y="Precision") +
+    labs(color="") +
+    theme(legend.position = "bottom", legend.direction = "horizontal")
+}
 
 

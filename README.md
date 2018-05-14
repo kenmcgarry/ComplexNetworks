@@ -6,4 +6,4 @@ In this work we use complex network theory to provide a statistical model of the
 
 If you find the source code useful please cite our paper:
 
-K. McGarry and S. Mcdonald (2018) Complex network theory for the identification and assessment of candidate protein targets. Computers in Biology and Medicine, 97. pp. 113-123.
+> K. McGarry and S. Mcdonald (2018) Complex network theory for the identification and assessment of candidate protein targets. Computers in Biology and Medicine, 97. pp. 113-123.

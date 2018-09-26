@@ -8,3 +8,5 @@ The `pharos_v4.6.2.csv` is an incomplete list of protein types-according Panther
 
 The `BioPlex.csv` adds addtional high confidence PPI interactions to our HINT data. http://bioplex.hms.harvard.edu/
 
+Most important is the `GoSlim generic OBO` file. http://http://www.geneontology.org/page/go-subset-guide
+

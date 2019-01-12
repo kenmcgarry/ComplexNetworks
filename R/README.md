@@ -1,6 +1,6 @@
-## Some changes are occurring for debug purposes
+## Some changes are occurring for debug purposes <12/01/2019>
 
-## The following files:
+### The following files:
 
 `complex_networks_main.R` is the starting point, it calls in the other R files, loading in functions and data files.
 

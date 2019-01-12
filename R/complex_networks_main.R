@@ -5,8 +5,8 @@
 # commenced 4/1/18
 
 memory.limit(2010241024*1024) # use more RAM memory (20 GBs)
-setwd("C:/R-files/complexnetworks")    # point to where my code lives
-load("complexnets_15thFebruary2018.RData")
+setwd("C:/common_laptop/R-files/complexnetworks")    # point to where my code lives
+load("complexnets_16thFebruary2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
 
 # only run these files if you intend building up the data from scratch

@@ -49,7 +49,7 @@ plot(gsmall, edge.color="darkgray",
 
 # produce a power law graph of degree for paper
 plot_power <- function(gs){
-  m = displ$new(gs$degree)
+  m = displ$new(gs$nodes$degree)
   ##Estimate the cut-off
   estimate_xmin(m)
   m$setXmin(105); m$setPars(2.644)
@@ -66,7 +66,7 @@ plot_power <- function(gs){
     theme(axis.title.x = element_text(color="black", size=14, face="bold"))+
     geom_vline(xintercept = 5, linetype="dashed", color = "red", size=1)
   
-  cat("\nPercentiles",quantile(gs$degree, c(.70, .80, .90)) )
+  cat("\nPercentiles",quantile(gs$nodes$degree, c(.70, .80, .90)) )
 
 }
 

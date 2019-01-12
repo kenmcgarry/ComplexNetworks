@@ -5,7 +5,7 @@
 # interactions from 8 interactome resources (BioGRID, MINT, iRefWeb, DIP, IntAct, HPRD, MIPS 
 # and the PDB). Contains 12,429 unique proteins with 59,128 interactions between them. http://hint.yulab.org/
 
-ppi_hint <- read.csv("c:\\R-files\\proteins\\HINT-2017.csv", header=TRUE,stringsAsFactors = FALSE)
+ppi_hint <- read.csv("c:\\common_laptop\\R-files\\proteins\\HINT-2017.csv", header=TRUE,stringsAsFactors = FALSE)
 
 drug_targets <- load_drugtargets()  # loads in and preprocesses the drug.targets file.
 drug_targets <- drug_targets[!(duplicated(drug_targets[c("DrugName","Gene")]) | duplicated(drug_targets[c("DrugName","Gene")], fromLast = TRUE)), ]
@@ -21,7 +21,7 @@ ppi_hint <- ppi_hint %>%
 # add bioplex ppi data to hint ppi data
 # http://bioplex.hms.harvard.edu/
 
-bioplex <- read.csv(file="C://R-files//proteins//BioPlex.csv", header=TRUE, sep=",")
+bioplex <- read.csv(file="C://common_laptop//R-files//proteins//BioPlex.csv", header=TRUE, sep=",")
 ppi <- rbind(ppi_hint,bioplex) 
 
 ppi <- ppi %>% 
@@ -31,7 +31,7 @@ rm(bioplex,ppi_hint)
 
 # read in protein classification based on pharos database (it has the protein families),
 # assign them to ppi network for classification algorithyms.
-protein_class <- read.csv("c:\\R-files\\proteins\\pharos_v4.6.2.csv", header=TRUE,stringsAsFactors = FALSE,na.strings=c("", "NA"))
+protein_class <- read.csv("c:\\common_laptop\\R-files\\proteins\\pharos_v4.6.2.csv", header=TRUE,stringsAsFactors = FALSE,na.strings=c("", "NA"))
 protein_class <- protein_class[,c(3,8)]
 names(protein_class)[names(protein_class)=="DTO.Family"] <- "TargetClass"
 names(protein_class)[names(protein_class)=="HGNC.Sym"] <- "Gene"

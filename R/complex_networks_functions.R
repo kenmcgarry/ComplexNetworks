@@ -10,10 +10,10 @@ library(org.Hs.eg.db)
 library(dplyr)
 library(tidyr)
 library(igraph)
-library(NCBI2R)
-library(rentrez)
+#library(NCBI2R)
+#library(rentrez)
 library(ggplot2)
-library(biomaRt)
+#library(biomaRt)
 library(scales)
 library(grid)
 library(RColorBrewer)
@@ -21,16 +21,16 @@ library(xtable)
 library(poweRlaw)
 library(ontologySimilarity)
 library(ontologyIndex)
-library(infotheo)
-library(clusterProfiler)
-library(linkcomm)
+#library(infotheo)
+#library(clusterProfiler)
+#library(linkcomm)
 library(GSEABase)
 library(ROCR)
 library(kernlab)
 library("e1071")
 library(caret)
 library(data.table)
-library(ranger)
+#library(ranger)
 library(randomForest)
 
 
@@ -49,7 +49,7 @@ firstup <- function(x) {
 # DrugCentral is a comprehensive drug information resource for FDA drugs and drugs approved outside USA. The 
 # resources can be searched using: drug, target, disease, pharmacologic action, terms. 
 load_drugtargets <- function(){
-  drug_targets <- read.csv(file="C://R-files//disease//drug.target.interaction.tsv", header=TRUE, sep="\t",stringsAsFactors = FALSE)
+  drug_targets <- read.csv(file="C://common_laptop//R-files//disease//drug.target.interaction.tsv", header=TRUE, sep="\t",stringsAsFactors = FALSE)
   names(drug_targets)[names(drug_targets)=="DRUG_NAME"] <- "DrugName"
   names(drug_targets)[names(drug_targets)=="TARGET_CLASS"] <- "TargetClass"
   names(drug_targets)[names(drug_targets)=="GENE"] <- "Gene"
@@ -65,8 +65,8 @@ load_drugtargets <- function(){
   drug_targets$Gene <- toupper(drug_targets$Gene)  # all to uppercase
   
   # shorten some names, for ease printing etc
-  drug_targets$TargetClass <- gsub('Nuclear hormone receptor', 'Nuc receptor', drug_targets$TargetClass)
-  drug_targets$TargetClass <- gsub('Transcription factor', 'Transcription', drug_targets$TargetClass)
+  drug_targets$TargetClass <- gsub('Nuclear hormone receptor', 'NR', drug_targets$TargetClass)
+  drug_targets$TargetClass <- gsub('Transcription factor', 'TF', drug_targets$TargetClass)
   drug_targets$TargetClass <- gsub('Membrane receptor', 'Membrane', drug_targets$TargetClass)
   
   return(drug_targets)
@@ -83,7 +83,7 @@ middle <- function(mydata,n){
   mydata[startpoint:endpoint,]
 }
 
-# For each protein in the list findout how many publiactions it has been mentioned in
+# For each protein in the list findout how many publications it has been mentioned in
 get_pubs <- function(protein_list){
   npubs <- count_articles(protein_list)
   return(npubs)
@@ -212,7 +212,8 @@ get_gstatistics <- function(gt) {
     
   tmp <- igraph::cluster_walktrap(gt)
   nodes$comm <- as.vector(membership(tmp))
-  alpha <- igraph::alpha_centrality(ppi_net,alpha=0.1)  
+  #alpha <- igraph::alpha_centrality(ppi_net,alpha=0.1)  
+  alpha <- igraph::alpha_centrality(gt,alpha=0.1)  
   nodes$central <- as.vector(alpha)
     
   cat("\nOverall network statistics:")
@@ -266,10 +267,10 @@ corenessLayout <- function(g) {
 # it will also add genenames to hublist. Need to create igraph object first then run get
 # gs_statistics() to get the required data on "degree" for each protein.
 find_hubs <- function(gstats){
-  genenames <- as.character(rownames(gstats))
-  hublist <- cbind(gstats,genenames)
-  cutoff <- quantile(gstats$degree, probs = c(0.60,0.70, 0.75, 0.8, 0.85, 0.9, 0.99), na.rm = TRUE) 
-  hublist <- filter(hublist,degree > cutoff[1])
+  genenames <- as.character(rownames(gstats$nodes))
+  hublist <- cbind(gstats$nodes,genenames)
+  cutoff  <- quantile(gstats$nodes$degree, probs = c(0.60,0.70, 0.75, 0.8, 0.85, 0.9, 0.99), na.rm = TRUE) 
+  hublist <- dplyr::filter(hublist,degree > cutoff[1])
   hublist <- data.frame(lapply(hublist, as.character), stringsAsFactors=FALSE)
   
   return(hublist)
@@ -312,8 +313,8 @@ kegg_analysis <- function(yourgenes){
 
 
 delete_isolates <- function(gt) {
-  isol <- V(gt)[degree(gt)==0]
-  gt <- delete.vertices(gt, isol)
+  isol <- V(gt)[igraph::degree(gt)==0]
+  gt <- igraph::delete.vertices(gt, isol)
   return(gt)
 
 }

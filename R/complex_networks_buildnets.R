@@ -17,7 +17,7 @@ dtn <- graph.data.frame(dtn)
 dtn <- as.undirected(dtn); 
 dtn <- igraph::simplify(dtn)  # remove duplicates and self-loops
 
-dtn <- delete.vertices(dtn, V(dtn)[degree(dtn) < 11])
+dtn <- igraph::delete.vertices(dtn, V(dtn)[igraph::degree(dtn) < 11])
 dtn <- delete_isolates(dtn)
 dts <- get_gstatistics(dtn)
 layout <- layout_nicely(dtn)
@@ -25,11 +25,11 @@ layout <- layout_nicely(dtn)
 # Start building kernal predictors
 library(kernlab)
 
-clu <- clusters(ppi_net)
-ppi_net.gc <- induced.subgraph(ppi_net,clu$membership == which.max(clu$csize))
-L <- as.matrix(graph.laplacian(ppi_net.gc))
+clu <- clusters(gppi)
+gppi.gc <- induced.subgraph(gppi,clu$membership == which.max(clu$csize))
+L <- as.matrix(graph.laplacian(gppi.gc))
 egl <- eigen(L) 
-nv <- vcount(ppi_net.gc)
+nv <- vcount(gppi.gc)
 
 # create and plot the three eigenvectors for the 1st, 2nd and 3rd largest weights
 for (j in 1:3){

@@ -1,9 +1,7 @@
 # complex_networks_reviewers.R
 # further experiments and analysis conducted as a result of reviewer feedback.
 
-memory.limit(2210241024*1024) # use more RAM memory (22 GBs)
-setwd("C:/R-files/complexnetworks")    # point to where my code lives
-load("ComplexNets10thApril2018.RData")
+#load("ComplexNets10thApril2018.RData")
 source("complex_networks_functions.R")  # load in the functions required for this work. 
 library(AUC)
 

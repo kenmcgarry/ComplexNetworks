@@ -45,7 +45,7 @@ for (i in 1:length(partners)){
 }
 drugcore <- drugcore[-1,]    # 1st entry is rubbish, so remove it
 
-xtable(drugcore)
+xtable(drugcore)  # for LaTex
 
 
 

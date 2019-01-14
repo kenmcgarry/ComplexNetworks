@@ -6,9 +6,6 @@ rf.model <- randomForest(as.factor(ytrain) ~., data=xtrain[,1:149],
                          importance=TRUE,proximity = TRUE,keep.forest=TRUE,
                          ntree=1000)
 
-
-
-
 print(rf.model)
 round(importance(rf.model), 2)
 varImpPlot(rf.model,main="",type=2,color="black",pch=16) 

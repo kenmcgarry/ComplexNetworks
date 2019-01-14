@@ -74,7 +74,7 @@ plot_power <- function(gs){
 # ggplot2 version of power law plot
 plot_power2 <- function(gppi){
   
-G.degrees <- degree(gppi)
+G.degrees <- igraph::degree(gppi)
 G.degree.histogram <- as.data.frame(table(G.degrees))
 G.degree.histogram[,1] <- as.numeric(G.degree.histogram[,1])
 ggplot(G.degree.histogram, aes(x = G.degrees, y = Freq)) +

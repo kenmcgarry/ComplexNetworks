@@ -1,8 +1,6 @@
 # complex_networks_reviewers.R
 # further experiments and analysis conducted as a result of reviewer feedback.
 
-#load("ComplexNets10thApril2018.RData")
-source("complex_networks_functions.R")  # load in the functions required for this work. 
 library(AUC)
 library(randomForest)
 
@@ -10,15 +8,17 @@ library(randomForest)
 ## POINT 1: DATA IMBALANCE PROBLEM, WE HAVE 1,449 TARGETS AND 11,567 NON-TARGETS
 # https://stats.stackexchange.com/questions/157714/r-package-for-weighted-random-forest-classwt-option/158030#158030
 # https://stats.stackexchange.com/questions/163251/creating-a-test-set-with-imbalanced-data/163567#163567
-#setwd("C:/R-files/NeuralNet")  
-#load("NCA-27thMarch2018.RData")
+
+setwd("C:/common_laptop/R-files/complexnetworks")
+#load("complexnets14thJan2019.RData")
+load("mmt.RData")
 ## Convert matrix to dataframe and balance out the data by undersampling
-mnew <- data.table::transpose(as.data.frame(mmt))
+mnew <- data.table::transpose(as.data.frame(mt))
 mnew <- data.frame(mnew)
-colnames(mnew) <- rownames(mmt)
-rownames(mnew) <- colnames(mmt)
-positives <- mnew[mnew$targets == 1,]  # get all targets (1,449)
-negatives <- mnew[mnew$targets == 0,]  # get all nontargets (11,567)
+colnames(mnew) <- rownames(mt)
+rownames(mnew) <- colnames(mt)
+positives <- mnew[mnew$targets == 1,]  # get all targets ()
+negatives <- mnew[mnew$targets == 0,]  # get all nontargets ()
 
 ## Prepare a training and a test set / as per reviewer guidelines
 nmin <- round(nrow(positives)/2)
@@ -51,7 +51,16 @@ rf1 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1)
 rf2 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(100,200),strata=yTRAIN)
 rf3 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(100,500),strata=yTRAIN)
 rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(300,724),strata=yTRAIN)
-#rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(724,724),strata=yTRAIN)
+
+############################################################################
+ynew <- c(negatives[1:100,150], positives[1:100,150])
+xnew <- rbind(negatives[1:100,1:149],positives[1:100,1:149])
+newdata <- cbind(ynew,xnew); rm(ynew,xnew)
+names(newdata) <- make.names(names(newdata))
+rf5 <- randomForest(as.factor(ynew)~.,data=newdata, proximity=TRUE, mtry=10, ntree=100,nodesize=1)
+
+###########################################################################
+
 
 ## plot ROC for training data votes
 par(mfrow=c(1,1))
@@ -61,28 +70,28 @@ plot(roc(rf3$votes[,2],factor(1 * (rf3$y==1))),col=3,add=TRUE)
 plot(roc(rf4$votes[,2],factor(1 * (rf4$y==1))),col=4,add=TRUE)
 
 for (i in 1:4){
-if(i==1) rf_model <- rf1
-if(i==2) rf_model <- rf2
-if(i==3) rf_model <- rf3
-if(i==4) rf_model <- rf4
+  if(i==1) rf_model <- rf1
+  if(i==2) rf_model <- rf2
+  if(i==3) rf_model <- rf3
+  if(i==4) rf_model <- rf4
 
-predicted_rf_train <- predict(rf_model,newdata=allTRAIN,type = "prob")
-pred_rf_train <- ROCR::prediction((predicted_rf_train[,2]),yTRAIN)
-rf.pr.train <- ROCR::performance(pred_rf_train, "prec", "rec")
-#plot(rf.pr.train)
+  predicted_rf_train <- predict(rf_model,newdata=allTRAIN,type = "prob")
+  pred_rf_train <- ROCR::prediction((predicted_rf_train[,2]),yTRAIN)
+  rf.pr.train <- ROCR::performance(pred_rf_train, "prec", "rec")
+  #plot(rf.pr.train)
 
-## Ok, so now test out RF on test data
-predicted_rf_test <- predict(rf_model,allTEST) # cant use "prob" as confusionmatrix cant use it(error)
-confusionMatrix(data=predicted_rf_test,reference=yTEST,positive="1") 
-predicted_rf_test <- predict(rf_model,allTEST,type="prob")  # ROCR functions need type="prob"
-pred_rf_test <- ROCR::prediction((predicted_rf_test[,2]),yTEST)
-rf.roc.test <- ROCR::performance(pred_rf_test, "tpr", "fpr")
-rf.pr.test <- ROCR::performance(pred_rf_test, "prec", "rec")
+  ## Ok, so now test out RF on test data
+  predicted_rf_test <- predict(rf_model,allTEST) # cant use "prob" as confusionmatrix cant use it(error)
+  confusionMatrix(data=predicted_rf_test,reference=yTEST,positive="1") 
+  predicted_rf_test <- predict(rf_model,allTEST,type="prob")  # ROCR functions need type="prob"
+  pred_rf_test <- ROCR::prediction((predicted_rf_test[,2]),yTEST)
+  rf.roc.test <- ROCR::performance(pred_rf_test, "tpr", "fpr")
+  rf.pr.test <- ROCR::performance(pred_rf_test, "prec", "rec")
 
-if(i==1){rf1.roc <- rf.roc.test; rf1.pr <- rf.pr.test}
-if(i==2){rf2.roc <- rf.roc.test; rf2.pr <- rf.pr.test}
-if(i==3){rf3.roc <- rf.roc.test; rf3.pr <- rf.pr.test}
-if(i==4){rf4.roc <- rf.roc.test; rf4.pr <- rf.pr.test}
+  if(i==1){rf1.roc <- rf.roc.test; rf1.pr <- rf.pr.test}
+  if(i==2){rf2.roc <- rf.roc.test; rf2.pr <- rf.pr.test}
+  if(i==3){rf3.roc <- rf.roc.test; rf3.pr <- rf.pr.test}
+  if(i==4){rf4.roc <- rf.roc.test; rf4.pr <- rf.pr.test}
 }
 
 #rf.auc <- performance(pred_rf_test, measure = "auc")

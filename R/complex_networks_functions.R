@@ -348,7 +348,7 @@ annotate_with_go <- function(ppi_net){
   
   tempgo <- gene_GO_terms[V(ppi_net)$name]  # Annotate!!
   tempgo <- tempgo[!sapply(tempgo, is.null)]  # Not all proteins have GO annotations so sadly remove them.
-  go_proteins <- names(tempgo) # Unfortunately, we are left with only 13,417 proteins.
+  go_proteins <- names(tempgo) # .
   # sort GO terms by the three categories, breakdown is useful for summary statistics
   cc <- go$id[go$name == "cellular_component"]
   bp <- go$id[go$name == "biological_process"]
@@ -361,44 +361,6 @@ annotate_with_go <- function(ppi_net){
   #sim_matrix <- get_sim_grid(ontology=go,information_content=GO_IC,term_sets=terms_by_protein)
   #dist_mat <- max(sim_matrix) - sim_matrix  # need a distance matrix, not a similagrity matrix
   return(tempgo)
-}
-
-
-# Add the protein type to the ppi network of target proteins
-annotate_with_panther <- function(drugtargets){
-  # create drug to target network
-  
-  # Remove small quantity proteins; Adhesion; Nuclear Other; Antibody; CD Molecules; Ribosomal; Cytokine; Surface Antigen; Membrane other
-  drugtargets <-  # Only keep protein target types with at least 50 occurences
-      drugtargets %>%
-      add_count(TargetClass,sort=TRUE) %>%
-      filter(n > 50)
-  
-  dtn <- drugtargets[,c(1,3)]  # use only drugs and proteins
-  dtn[] <- lapply(dtn, as.character) # convert from factors to strings
-  dtn <- graph.data.frame(dtn)
-  dtn <- as.undirected(dtn); 
-  dtn <- igraph::simplify(dtn)  # remove duplicates and self-loops
-  
-  dtn <- delete.vertices(dtn, V(dtn)[degree(dtn) < 5])
-  dtn <- delete_isolates(dtn)
-  dts <- get_gstatistics(dtn)
-  
-  # assign protein types: 
-  V(dtn)$GPCR <- 1
-  V(target_ppi)$Kinase <- 1
-  V(target_ppi)$Enzyme <- 1
-  V(target_ppi)$IonChannel <- 1
-  V(target_ppi)$Transporter <- 1
-  V(target_ppi)$Membrane <- 1
-  V(target_ppi)$Structural <- 1
-  V(target_ppi)$NucRecept <- 1
-  V(target_ppi)$Transcription <- 1
-  V(target_ppi)$Secreted <- 1
-  V(target_ppi)$Cytosolic <- 1
-  V(target_ppi)$Unclassified <- 1
-  
-  return(anno_target)
 }
 
 
@@ -415,14 +377,14 @@ go_slim_annotation <- function(){ #mylist
   mm <- matrix(0, 149, length(names(gostuff)))  # Number of GO terms in GoSlim (CC+BP+MF) x Number of genes
   colnames(mm) <- names(gostuff)
   rownames(mm) <- give_rownames_mm()
+  #obo <- "C://common_laptop//R-files//GOslim//goslim_generic.obo" # generic terms by GO consortium
   
   for (i in 1:length(names(gostuff))){
     myCollection <- GOCollection(gostuff[[i]])
     genename <- names(gostuff[i])
     ###go_empty_mf$Gene <- genename 
-    obo <- system.file("extdata","goslim_generic.obo", package="GSEABase") # generic terms by GO consortium
-    #obo <- system.file("extdata","goslim_chembl.obo", package="GSEABase") # Chembl Drug Target developed by Mutowo and Lomax
-    #obo <- system.file("extdata","goslim_pir.obo", package="GSEABase") #Protein Info Resource by Darren Natale
+    obo <- "C://common_laptop//R-files//GOslim//goslim_generic.obo" # generic terms by GO consortium
+    
     slim <- getOBOCollection(obo)
     go_mf <- tryCatch(goSlim(myCollection, slim, "MF"),error=function(e) {go_mf <- error_go_mf()})
     go_cc <- tryCatch(goSlim(myCollection, slim, "CC"),error=function(e) {go_cc <- error_go_cc()})
@@ -431,9 +393,11 @@ go_slim_annotation <- function(){ #mylist
     if(length(go_mf) ==1) {mm[1:43,i]  <- as.vector(matrix(0,ncol=43))} else{  # fill with zeros if no annotations found
       go_mf[go_mf$Count != 0,]$Count <- 1; # convert non-zero numbers into 1's
       mm[1:43,i] <- go_mf$Count}            # found MF annotations, assign to matrix
+    
     if(length(go_cc)==1) {mm[44:78,i] <- as.vector(matrix(0,ncol=35))} else{
       go_cc[go_cc$Count != 0,]$Count <- 1
       mm[44:78,i] <- go_cc$Count}
+    
     if(length(go_bp) == 1) {mm[79:149,i]<-  as.vector(matrix(0,ncol=71))} else{
       go_bp[go_bp$Count != 0,]$Count <- 1
       mm[79:149,i] <- go_bp$Count}
@@ -459,20 +423,21 @@ error_go_bp <- function(){
   }
 
 
-# Add the "drug target" class to the "mm" matrix, this will make it ready for classification algorithms.
-# but first remove nodes that do have GO terms.
+# Add the "drug target" class to the "mm" matrix creating the mmt matrix, this will make it ready for 
+# classification algorithms  but first remove nodes that do have GO terms.
 give_classlabels_mm <- function(mm){
   
-  biglist <- V(ppi_net)$name
-  survivors <- colnames(mm)
-  mmt <- matrix(0, 1, length(biglist)) 
+  #biglist <- V(ppi_net)$name
+  survivors <- colnames(mm)   # i.e. we have a protein with at least 1 GOSLIM term
+  mmt <- matrix(0, 1, ncol(mm)) 
   rownames(mmt) <- "targets"
   # delete nodes without GO terms from ppi_net 
   biglist <- V(ppi_net)$name
   lostnodes <- survivors[!biglist %in% survivors]
   #lostnodes <- lostnodes[is.na(lostnodes)] <- 0
-  ppi_net <-igraph::delete_vertices(ppi_net,lostnodes[1:2020])
-  
+  #####ppi_net <-igraph::delete_vertices(ppi_net,lostnodes) # I cant resolve this problem as yet. However removing
+                                                            # nodes from ppi network that dont have GOSLIM terms isnt
+                                                          # important - we just need the mmt matrix for doing classification.
   targets <- drug_targets$Gene  # get the original drug target data
 
   for(i in 1:length(survivors)){

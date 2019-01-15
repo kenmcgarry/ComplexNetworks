@@ -632,9 +632,12 @@ make_table <- function(targettype,gs1,cutoff){
   proteins <- rownames(targettype)
   targettype <- data.frame(targettype)
   target <- as.vector(targettype$X1)
-  targettype <- data.frame(protein=proteins, prob=targettype$X1)
-  targettype <- filter(targettype, prob >= cutoff) # probabilities equal to greater than 0.8 classed as target
-
+  targettype <- data.frame(protein=proteins, prob=targettype$X1)  ##prob=targettype$X1
+  # probabilities equal to greater than cutoff classed as target
+  targettype <- 
+  targettype %>% 
+    filter(prob >= cutoff)
+  
 # ADD protein type to dataframe: protein_class for protein types
   targettype[] <- lapply(targettype, as.character)
   rlen <- nrow(targettype)

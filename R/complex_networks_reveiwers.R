@@ -3,6 +3,7 @@
 
 library(AUC)
 library(randomForest)
+library(xtable)
 
 #source("GO_slim_functions.R")  # Override old goslim functions with new ones. 
 
@@ -11,8 +12,8 @@ library(randomForest)
 # https://stats.stackexchange.com/questions/163251/creating-a-test-set-with-imbalanced-data/163567#163567
 
 setwd("C:/common_laptop/R-files/complexnetworks")
-#load("complexnets14thJan2019.RData")
-load("mmt.RData")
+load("15thJanuary2019.RData")
+
 ## Convert matrix to dataframe and balance out the data by undersampling
 mnew <- data.table::transpose(as.data.frame(mt))
 mnew <- data.frame(mnew)

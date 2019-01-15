@@ -1,6 +1,6 @@
 ### There are a number of issues with some changes to either package updates or more than likely some lack of robustness in my own code. I have tracked the issues down to the ontology annotation process. In order to build Random Forest classifers we need each gene to be annotated with the goslim obo file. 
 
-### In the meantime I have uploaded an old RDATA workspace (ComplexNets10thApril2018.RData). Load this in and the relevant data structure is "mt". From this point use the code in `complex_networks_reviewers.R` this should allow you train Random Forests etc on the data. 
+### In the meantime (as a fix) I have uploaded an old RDATA workspace (15thJanuary2019.RData). Load this in and the relevant data structure is "mt". From this point use the code in `complex_networks_reviewers.R` this should allow you train Random Forests etc on the data. 
 
 ### I will try and figure out why the annoation process has failed! Any help will be apreciated!
 

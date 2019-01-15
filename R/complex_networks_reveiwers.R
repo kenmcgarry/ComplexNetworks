@@ -52,16 +52,6 @@ rf2 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=
 rf3 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(100,500),strata=yTRAIN)
 rf4 <- randomForest(yTRAIN~.,allTRAIN, mtry=120, ntree=5000,nodesize=1,sampsize=c(300,724),strata=yTRAIN)
 
-############################################################################
-ynew <- c(negatives[1:100,150], positives[1:100,150])
-xnew <- rbind(negatives[1:100,1:149],positives[1:100,1:149])
-newdata <- cbind(ynew,xnew); rm(ynew,xnew)
-names(newdata) <- make.names(names(newdata))
-rf5 <- randomForest(as.factor(ynew)~.,data=newdata, proximity=TRUE, mtry=10, ntree=100,nodesize=1)
-
-###########################################################################
-
-
 ## plot ROC for training data votes
 par(mfrow=c(1,1))
 plot(roc(rf1$votes[,2],factor(1 * (rf1$y==1))),main="ROC curves for four models predicting class 1")

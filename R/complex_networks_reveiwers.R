@@ -4,6 +4,7 @@
 library(AUC)
 library(randomForest)
 
+#source("GO_slim_functions.R")  # Override old goslim functions with new ones. 
 
 ## POINT 1: DATA IMBALANCE PROBLEM, WE HAVE 1,449 TARGETS AND 11,567 NON-TARGETS
 # https://stats.stackexchange.com/questions/157714/r-package-for-weighted-random-forest-classwt-option/158030#158030
